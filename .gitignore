@@ -1,0 +1,4 @@
+# Arquivos que não vão para o Git
+.Renviron
+.Rhistory
+.Rproj.user/
