@@ -14,7 +14,8 @@ con <- dbConnect(
   host     = Sys.getenv("DB_HOST"),
   port     = Sys.getenv("DB_PORT"),
   user     = Sys.getenv("DB_USER"),
-  password = Sys.getenv("DB_PASSWORD")
+  password = Sys.getenv("DB_PASSWORD"),
+  sslmode = "require"
 )
 
 # UI ----
@@ -32,11 +33,18 @@ ui <- fluidPage(
   ),
   
   ## Login----
+  # div(
+  #   style = "display:flex; flex-direction:column; align-items:center; margin-top:50px;",
+  #   textInput("in_siape", "Digite seu SIAPE:"),
+  #   actionButton("btn_entrar", "Entrar", class = "btn-primary")
+  # ),
   div(
     style = "display:flex; flex-direction:column; align-items:center; margin-top:50px;",
     textInput("in_siape", "Digite seu SIAPE:"),
+    passwordInput("in_senha", "Senha:"),                # <- novo campo
     actionButton("btn_entrar", "Entrar", class = "btn-primary")
   ),
+  
   br(), hr(),
   
   ## Conteúdo principal----
@@ -61,22 +69,68 @@ server <- function(input, output, session) {
   
   
   ## LOGIN ----
+  # observeEvent(input$btn_entrar, {
+  #   siape <- input$in_siape
+  #   if (nzchar(siape)) {
+  #     dados <- dbGetQuery(con, "SELECT * FROM servidores WHERE siape = $1", params = list(siape))
+  #     if (siape == "admin") {
+  #       usuario("admin")
+  #       nome_usuario("Administrador")
+  #     } else if (nrow(dados) == 1) {
+  #       usuario(dados$siape[1])
+  #       nome_usuario(dados$nome[1])
+  #     } else {
+  #       showNotification("SIAPE não encontrado.", type = "error")
+  #     }
+  #     
+  #   }
+  # })
   observeEvent(input$btn_entrar, {
     siape <- input$in_siape
-    if (nzchar(siape)) {
-      dados <- dbGetQuery(con, "SELECT * FROM servidores WHERE siape = $1", params = list(siape))
-      if (siape == "admin") {
-        usuario("admin")
-        nome_usuario("Administrador")
-      } else if (nrow(dados) == 1) {
+    senha  <- input$in_senha
+    if (!nzchar(siape) || !nzchar(senha)) {
+      showNotification("Informe SIAPE e senha.", type = "error")
+      return()
+    }
+    
+    # busca o usuário na tabela servidores
+    dados <- dbGetQuery(con, "SELECT siape, nome, senha_hash FROM servidores WHERE siape = $1", params = list(siape))
+    
+    if (nrow(dados) == 1) {
+      # se não houver senha cadastrada, nega (ou permitir login sem senha se quiser — mas não recomendado)
+      if (is.na(dados$senha_hash) || dados$senha_hash == "") {
+        showNotification("Usuário sem senha configurada. Contate o administrador.", type = "error")
+        return()
+      }
+      # verifica a senha usando bcrypt::checkpw
+      ok <- FALSE
+      # bcrypt::checkpw espera (plaintext, hash)
+      try({
+        ok <- bcrypt::checkpw(senha, dados$senha_hash[1])
+      }, silent = TRUE)
+      
+      if (isTRUE(ok)) {
         usuario(dados$siape[1])
         nome_usuario(dados$nome[1])
+        showNotification(paste("Bem-vindo,", dados$nome[1]), type = "message")
+        
+        # # opcional: registrar login
+        # dbExecute(con, "INSERT INTO login_logs (siape, momento, sucesso) VALUES ($1, now(), TRUE)",
+        #           params = list(dados$siape[1]))
       } else {
-        showNotification("SIAPE não encontrado.", type = "error")
+        showNotification("SIAPE ou senha incorretos.", type = "error")
+        # opcional: registrar tentativa falha
+        # dbExecute(con, "INSERT INTO login_logs (siape, momento, sucesso) VALUES ($1, now(), FALSE)",
+        #           params = list(siape))
       }
       
+    } else {
+      showNotification("SIAPE não encontrado.", type = "error")
+      # dbExecute(con, "INSERT INTO login_logs (siape, momento, sucesso) VALUES ($1, now(), FALSE)",
+      #           params = list(siape))
     }
   })
+  
   
   ## Dados auxiliares----
   codigos_validos <- reactive({
