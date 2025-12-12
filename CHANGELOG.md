@@ -9,4 +9,6 @@
 
 ---
 ## [Unreleased]
-- Em desenvolvimento na branch `develop`
+### Changed
+- Ordenação da tabela de entregas agora é decrescente por padrão
+

@@ -1,72 +1,15 @@
-#' Tendo criado o banco no Railway com Postgres SQL
-#' Rodar esse app para atualizar os dados
-#' Data da última atualização: [25/09/2025]
-
+# SERVER ----
 library(shiny)
 library(DBI)
 library(RPostgres)
 library(DT)
 
-# Conexão com PostgreSQL ----
-con <- dbConnect(
-  RPostgres::Postgres(),
-  dbname   = Sys.getenv("DB_NAME"),
-  host     = Sys.getenv("DB_HOST"),
-  port     = Sys.getenv("DB_PORT"),
-  user     = Sys.getenv("DB_USER"),
-  password = Sys.getenv("DB_PASSWORD"),
-  sslmode  = Sys.getenv("PGSSLMODE")
-)
-
-
-# UI ----
-ui <- fluidPage(
-  tags$head(
-    includeCSS("www/estilo.css")
-  ),
-  
-  ## Cabeçalho----
-  div(
-    class = "top-panel",
-    style = "justify-content: center;",
-    img(src = "logo_ufpb_sisdip.png"),
-    span("Gestão de Entregas - SISDIP")
-  ),
-  
-  ## Login----
-  # div(
-  #   style = "display:flex; flex-direction:column; align-items:center; margin-top:50px;",
-  #   textInput("in_siape", "Digite seu SIAPE:"),
-  #   actionButton("btn_entrar", "Entrar", class = "btn-primary")
-  # ),
-  div(
-    style = "display:flex; flex-direction:column; align-items:center; margin-top:50px;",
-    textInput("in_siape", "Digite seu SIAPE:"),
-    passwordInput("in_senha", "Senha:"),                # <- novo campo
-    actionButton("btn_entrar", "Entrar", class = "btn-primary")
-  ),
-  
-  br(), hr(),
-  
-  ## Conteúdo principal----
-  uiOutput("out_conteudo"),
-  br(), br(), br(), hr(),
-  
-  ## Rodapé ----
-  tags$footer(
-    style = "text-align: center; padding: 10px; font-size: 14px; color: #6c757d;",
-    img(src = "logo_index.png", height = "60px", style = "vertical-align: middle; margin-right: 8px;"),
-    "© 2025 Marlenildo Melo - Todos os direitos reservados."
-  )
-)
-
-# SERVER ----
-server <- function(input, output, session) {
+function(input, output, session) {
   
   
   usuario      <- reactiveVal(NULL)
   nome_usuario <- reactiveVal(NULL)
-
+  
   registrar_login <- function(siape, sucesso, ip = NULL, user_agent = NULL) {
     try({
       dbExecute(con, 
@@ -150,8 +93,15 @@ server <- function(input, output, session) {
                         choices = c("Todos", sort(unique(todos_dados$servidor))))
     }
     
-    dados_entregas(dbGetQuery(con, "SELECT * FROM entregas WHERE servidor = $1", 
-                              params = list(usuario())))
+
+    dados_entregas(
+      dbGetQuery(
+        con,
+        "SELECT * FROM entregas WHERE servidor = $1 ORDER BY id DESC",
+        params = list(usuario())
+      )
+    )
+    
     
     if (usuario() == "admin") {
       dados_servidores(dbGetQuery(con, "SELECT * FROM servidores"))
@@ -198,8 +148,8 @@ server <- function(input, output, session) {
                    column(2, numericInput("in_horas", "Horas", 0, min = 0, step = 0.5)),
                    column(2, selectInput("in_status", "Status", c("Em andamento", "Concluído")))
                  ),
-                 actionButton("btn_add", label = " Adicionar", icon = icon("plus"), class = "btn-success"),
-                 actionButton("btn_update", label = " Editar", icon = icon("pen-to-square"), class = "btn-warning"),
+                 actionButton("btn_add", label = "Adicionar", icon = icon("plus"), class = "btn-success"),
+                 actionButton("btn_update", label = "Editar", icon = icon("pen-to-square"), class = "btn-warning"),
                  actionButton("btn_delete", label = "Remover", icon = icon("trash"), class = "btn-danger")
         )
       ), abas)
@@ -213,7 +163,7 @@ server <- function(input, output, session) {
                  p("Aqui você, como administrador, pode visualizar todas as entregas registradas no sistema.", class = "texto-explicativo"),
                  br(),
                  DTOutput("out_tabela_todos")),
-
+        
         #' -------------------
         # UI (Admin -> Gerenciar Códigos)----
         #' -------------------
@@ -229,8 +179,8 @@ server <- function(input, output, session) {
                  actionButton("btn_add_codigo", "Adicionar", icon = icon("plus"),  class = "btn-success"),
                  actionButton("btn_edit_codigo", "Editar", icon = icon("pen-to-square"),  class = "btn-warning"),
                  actionButton("btn_del_codigo", "Remover", icon = icon("trash"), class = "btn-danger")
-                 ),
-
+        ),
+        
         #' -------------------
         # UI (Admin -> Gerenciar Servidores)----
         #' -------------------
@@ -246,8 +196,8 @@ server <- function(input, output, session) {
                  actionButton("btn_add_servidor", "Adicionar",  icon = icon("plus"), class = "btn-success"),
                  actionButton("btn_edit_servidor", "Editar", icon = icon("pen-to-square"),  class = "btn-warning"),
                  actionButton("btn_del_servidor", "Remover", icon = icon("trash"), class = "btn-danger")
-                 )
         )
+      )
       )
     }
     
@@ -264,8 +214,8 @@ server <- function(input, output, session) {
       options = list(
         dom = 'Blfrtip',
         buttons = c('copy', 'excel', 'pdf', 'print'),
-        pageLength = 10,
-        lengthMenu = list(c(5, 10, 25, 50, 100), c('5', '10', '25', '50', '100')),
+        pageLength = 15,
+        lengthMenu = list(c(5, 10, 15, 25, 50, 100), c('5', '10', '15', '25', '50', '100')),
         language = list(
           decimal = ",",
           thousands = ".",
@@ -279,9 +229,9 @@ server <- function(input, output, session) {
           zeroRecords = "Nenhum registro encontrado",
           emptyTable = "Nenhum dado disponível na tabela",
           paginate = list(
-            first = "Primeiro", 
-            previous = "Anterior", 
-            `next` = "Proximo", 
+            first = "Primeiro",
+            previous = "Anterior",
+            `next` = "Proximo",
             last = "Último"
           ),
           buttons = list(
@@ -294,13 +244,13 @@ server <- function(input, output, session) {
       )
     )
   }
-
+  
   ## --- Aplicando nas tabelas ---
   output$out_tabela_entregas <- renderDT({
     tabela_padrao(dados_entregas(), selection = "single")
   })
-  
-  output$out_tabela_todos <- renderDT({
+
+    output$out_tabela_todos <- renderDT({
     dados_todos <- dbGetQuery(con, "SELECT * FROM entregas")
     tabela_padrao(dados_todos)
   })
@@ -324,7 +274,14 @@ server <- function(input, output, session) {
               params = list(as.character(input$in_data), input$in_codigo, input$in_entregas, input$in_horas, input$in_status, usuario()))
     
     #### Atualizar dados e tabela---
-    dados_entregas(dbGetQuery(con, "SELECT * FROM entregas WHERE servidor = $1", params = list(usuario())))
+    dados_entregas(
+      dbGetQuery(
+        con,
+        "SELECT * FROM entregas WHERE servidor = $1 ORDER BY id DESC",
+        params = list(usuario())
+      )
+    )
+    
     
     output$out_tabela_entregas <- renderDT({
       tabela_padrao(dados_entregas(), selection = "single")
@@ -369,7 +326,15 @@ server <- function(input, output, session) {
               ))
     
     # Atualiza dados e tabela
-    dados_entregas(dbGetQuery(con, "SELECT * FROM entregas WHERE servidor=$1", params = list(usuario())))
+    dados_entregas(
+      dbGetQuery(
+        con,
+        "SELECT * FROM entregas WHERE servidor=$1 ORDER BY id DESC",
+        params = list(usuario())
+      )
+    )
+    
+    
     output$out_tabela_entregas <- renderDT({
       tabela_padrao(dados_entregas(), selection = "single")
     })
@@ -413,7 +378,15 @@ server <- function(input, output, session) {
     dbExecute(con, "DELETE FROM entregas WHERE id=$1 AND servidor=$2", params = list(linha$id, usuario()))
     
     # Atualiza dados e tabela
-    dados_entregas(dbGetQuery(con, "SELECT * FROM entregas WHERE servidor=$1", params = list(usuario())))
+    dados_entregas(
+      dbGetQuery(
+        con,
+        "SELECT * FROM entregas WHERE servidor=$1 ORDER BY id DESC",
+        params = list(usuario())
+      )
+    )
+    
+    
     output$out_tabela_entregas <- renderDT({
       tabela_padrao(dados_entregas(), selection = "single")
     })
@@ -715,5 +688,3 @@ server <- function(input, output, session) {
   })
   
 }
-
-shinyApp(ui, server)
