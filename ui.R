@@ -52,9 +52,19 @@ fluidPage(
   
   ## Rodapé ----
   tags$footer(
-    style = "text-align: center; padding: 10px; font-size: 14px; color: #6c757d;",
-    img(src = "logo_index.png", height = "60px", style = "vertical-align: middle; margin-right: 8px;"),
-    img(src = "logo_ufpb_sisdip.png", height = "60px", style = "vertical-align: middle; margin-right: 8px;"),
-    "© 2025 - Desenvolvido por Marlenildo Melo. Todos os direitos reservados."
+    class = "footer",
+    # Logos
+    div(
+      img(src = "logo_index.png")
+    ),
+    
+    div(
+      class = "footer-version",
+      paste0(
+        "Desenvolvido por Marlenildo Melo © 2025 | App Entregas • Versão ",
+        APP_VERSION
+      )
+    )
   )
+  
 )
