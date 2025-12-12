@@ -13,3 +13,8 @@
 - Ordenação da tabela de entregas agora é decrescente por padrão
 
 
+---
+## [1.1.1] – 2025-12-12
+### Changed
+- Exibição da versão do aplicativo no rodapé
+
