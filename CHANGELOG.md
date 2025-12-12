@@ -18,3 +18,4 @@
 ### Changed
 - Exibição da versão do aplicativo no rodapé
 
+
