@@ -8,7 +8,8 @@
 - Relatórios com exportação
 
 ---
-## [Unreleased]
+## [1.1.0] – 2025-12-12
 ### Changed
 - Ordenação da tabela de entregas agora é decrescente por padrão
+
 
