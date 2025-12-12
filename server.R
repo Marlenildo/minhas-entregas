@@ -3,6 +3,17 @@ library(shiny)
 library(DBI)
 library(RPostgres)
 library(DT)
+library(pool)
+
+
+
+# -------------------------------
+# Versão do aplicativo
+# -------------------------------
+APP_VERSION <- tryCatch(
+  readLines("VERSION", warn = FALSE),
+  error = function(e) "dev"
+)
 
 function(input, output, session) {
   
@@ -12,7 +23,7 @@ function(input, output, session) {
   
   registrar_login <- function(siape, sucesso, ip = NULL, user_agent = NULL) {
     try({
-      dbExecute(con, 
+      dbExecute(pool, 
                 "INSERT INTO login_logs (siape, momento, sucesso, ip, user_agent)
                VALUES ($1, now(), $2, $3, $4)",
                 params = list(siape, sucesso, ip, user_agent))
@@ -29,7 +40,7 @@ function(input, output, session) {
     }
     
     # busca o usuário na tabela servidores
-    dados <- dbGetQuery(con,
+    dados <- dbGetQuery(pool,
                         "SELECT siape, nome, senha_hash FROM servidores WHERE siape = $1",
                         params = list(siape))
     if (nrow(dados) == 1) {
@@ -60,7 +71,7 @@ function(input, output, session) {
   
   ## Dados auxiliares----
   codigos_validos <- reactive({
-    dados <- dbGetQuery(con, "SELECT codigo, descricao FROM codigos_entrega")
+    dados <- dbGetQuery(pool, "SELECT codigo, descricao FROM codigos_entrega")
     paste(dados$codigo, "-", dados$descricao)
   })
   
@@ -74,9 +85,9 @@ function(input, output, session) {
     req(usuario())
     
     if (usuario() == "admin") {
-      todos_dados <- dbGetQuery(con, "SELECT * FROM entregas")
+      todos_dados <- dbGetQuery(pool, "SELECT * FROM entregas")
     } else {
-      todos_dados <- dbGetQuery(con, "SELECT * FROM entregas WHERE servidor = $1", 
+      todos_dados <- dbGetQuery(pool, "SELECT * FROM entregas WHERE servidor = $1", 
                                 params = list(usuario()))
     }
     
@@ -96,7 +107,7 @@ function(input, output, session) {
 
     dados_entregas(
       dbGetQuery(
-        con,
+        pool,
         "SELECT * FROM entregas WHERE servidor = $1 ORDER BY id DESC",
         params = list(usuario())
       )
@@ -104,8 +115,8 @@ function(input, output, session) {
     
     
     if (usuario() == "admin") {
-      dados_servidores(dbGetQuery(con, "SELECT * FROM servidores"))
-      dados_codigos(dbGetQuery(con, "SELECT * FROM codigos_entrega"))
+      dados_servidores(dbGetQuery(pool, "SELECT * FROM servidores"))
+      dados_codigos(dbGetQuery(pool, "SELECT * FROM codigos_entrega"))
     }
   })
   
@@ -251,17 +262,17 @@ function(input, output, session) {
   })
 
     output$out_tabela_todos <- renderDT({
-    dados_todos <- dbGetQuery(con, "SELECT * FROM entregas")
+    dados_todos <- dbGetQuery(pool, "SELECT * FROM entregas")
     tabela_padrao(dados_todos)
   })
   
   output$out_tabela_servidores <- renderDT({
-    dados_servidores <- dbGetQuery(con, "SELECT * FROM servidores")
+    dados_servidores <- dbGetQuery(pool, "SELECT * FROM servidores")
     tabela_padrao(dados_servidores)
   }, selection = "single")
   
   output$out_tabela_codigos <- renderDT({
-    dados_codigos <- dbGetQuery(con, "SELECT * FROM codigos_entrega")
+    dados_codigos <- dbGetQuery(pool, "SELECT * FROM codigos_entrega")
     tabela_padrao(dados_codigos)
   }, selection = "single")
   
@@ -270,13 +281,13 @@ function(input, output, session) {
   observeEvent(input$btn_add, {
     req(usuario())
     # Inserir no banco
-    dbExecute(con, "INSERT INTO entregas (data, codigo, entregas, horas, status, servidor) VALUES ($1, $2, $3, $4, $5, $6)",
+    dbExecute(pool, "INSERT INTO entregas (data, codigo, entregas, horas, status, servidor) VALUES ($1, $2, $3, $4, $5, $6)",
               params = list(as.character(input$in_data), input$in_codigo, input$in_entregas, input$in_horas, input$in_status, usuario()))
     
     #### Atualizar dados e tabela---
     dados_entregas(
       dbGetQuery(
-        con,
+        pool,
         "SELECT * FROM entregas WHERE servidor = $1 ORDER BY id DESC",
         params = list(usuario())
       )
@@ -318,7 +329,7 @@ function(input, output, session) {
     removeModal()  # Fecha o modal
     linha <- dados_entregas()[input$out_tabela_entregas_rows_selected, ]
     
-    dbExecute(con, "UPDATE entregas SET data=$1, codigo=$2, entregas=$3, horas=$4, status=$5 
+    dbExecute(pool, "UPDATE entregas SET data=$1, codigo=$2, entregas=$3, horas=$4, status=$5 
                   WHERE id=$6 AND servidor=$7",
               params = list(
                 as.character(input$in_data), input$in_codigo, input$in_entregas, 
@@ -328,7 +339,7 @@ function(input, output, session) {
     # Atualiza dados e tabela
     dados_entregas(
       dbGetQuery(
-        con,
+        pool,
         "SELECT * FROM entregas WHERE servidor=$1 ORDER BY id DESC",
         params = list(usuario())
       )
@@ -375,12 +386,12 @@ function(input, output, session) {
     removeModal()
     linha <- dados_entregas()[input$out_tabela_entregas_rows_selected, ]
     
-    dbExecute(con, "DELETE FROM entregas WHERE id=$1 AND servidor=$2", params = list(linha$id, usuario()))
+    dbExecute(pool, "DELETE FROM entregas WHERE id=$1 AND servidor=$2", params = list(linha$id, usuario()))
     
     # Atualiza dados e tabela
     dados_entregas(
       dbGetQuery(
-        con,
+        pool,
         "SELECT * FROM entregas WHERE servidor=$1 ORDER BY id DESC",
         params = list(usuario())
       )
@@ -408,7 +419,7 @@ function(input, output, session) {
   observeEvent(input$out_tabela_codigos_rows_selected, {
     sel <- input$out_tabela_codigos_rows_selected
     req(sel)
-    tabela <- dbGetQuery(con, "SELECT * FROM codigos_entrega")
+    tabela <- dbGetQuery(pool, "SELECT * FROM codigos_entrega")
     linha <- tabela[sel, ]
     updateTextInput(session, "in_codigo_id", value = linha$codigo)
     updateTextInput(session, "in_codigo_desc", value = linha$descricao)
@@ -418,16 +429,16 @@ function(input, output, session) {
   observeEvent(input$btn_add_codigo, {
     req(input$in_codigo_id, input$in_codigo_desc)
     
-    existe <- dbGetQuery(con, "SELECT COUNT(*) FROM codigos_entrega WHERE codigo = $1",
+    existe <- dbGetQuery(pool, "SELECT COUNT(*) FROM codigos_entrega WHERE codigo = $1",
                          params = list(input$in_codigo_id))
     
     if (existe[1,1] > 0) {
       showNotification("⚠️ Este código já está cadastrado!", type = "warning")
     } else {
-      dbExecute(con, "INSERT INTO codigos_entrega (codigo, descricao) VALUES ($1, $2)",
+      dbExecute(pool, "INSERT INTO codigos_entrega (codigo, descricao) VALUES ($1, $2)",
                 params = list(input$in_codigo_id, input$in_codigo_desc))
       output$out_tabela_codigos <- renderDT({
-        dbGetQuery(con, "SELECT * FROM codigos_entrega")
+        dbGetQuery(pool, "SELECT * FROM codigos_entrega")
       }, selection="single", rownames = FALSE)
       showNotification("✅ Código adicionado com sucesso!", type = "message")
     }
@@ -451,19 +462,19 @@ function(input, output, session) {
   observeEvent(input$confirm_edit_codigo, {
     removeModal()
     sel <- input$out_tabela_codigos_rows_selected
-    dados <- dbGetQuery(con, "SELECT * FROM codigos_entrega")
+    dados <- dbGetQuery(pool, "SELECT * FROM codigos_entrega")
     id <- dados$id[sel]
     
-    existe <- dbGetQuery(con, "SELECT COUNT(*) FROM codigos_entrega WHERE codigo = $1 AND id != $2",
+    existe <- dbGetQuery(pool, "SELECT COUNT(*) FROM codigos_entrega WHERE codigo = $1 AND id != $2",
                          params = list(input$in_codigo_id, id))
     
     if (existe[1,1] > 0) {
       showNotification("⚠️ Já existe um código com este ID!", type = "warning")
     } else {
-      dbExecute(con, "UPDATE codigos_entrega SET codigo=$1, descricao=$2 WHERE id=$3",
+      dbExecute(pool, "UPDATE codigos_entrega SET codigo=$1, descricao=$2 WHERE id=$3",
                 params = list(input$in_codigo_id, input$in_codigo_desc, id))
       output$out_tabela_codigos <- renderDT({
-        dbGetQuery(con, "SELECT * FROM codigos_entrega")
+        dbGetQuery(pool, "SELECT * FROM codigos_entrega")
       }, selection="single", rownames = FALSE)
       showNotification("✏️ Código atualizado com sucesso!", type = "message")
     }
@@ -487,13 +498,13 @@ function(input, output, session) {
   observeEvent(input$confirm_delete_codigo, {
     removeModal()
     sel <- input$out_tabela_codigos_rows_selected
-    tabela <- dbGetQuery(con, "SELECT * FROM codigos_entrega")
+    tabela <- dbGetQuery(pool, "SELECT * FROM codigos_entrega")
     id <- tabela$id[sel]
     
-    dbExecute(con, "DELETE FROM codigos_entrega WHERE id=$1", params = list(id))
+    dbExecute(pool, "DELETE FROM codigos_entrega WHERE id=$1", params = list(id))
     
     output$out_tabela_codigos <- renderDT({
-      dbGetQuery(con, "SELECT * FROM codigos_entrega")
+      dbGetQuery(pool, "SELECT * FROM codigos_entrega")
     }, selection="single", rownames = FALSE)
     
     # Limpar inputs
@@ -510,7 +521,7 @@ function(input, output, session) {
   observeEvent(input$out_tabela_servidores_rows_selected, {
     sel <- input$out_tabela_servidores_rows_selected
     req(sel)
-    tabela <- dbGetQuery(con, "SELECT * FROM servidores")
+    tabela <- dbGetQuery(pool, "SELECT * FROM servidores")
     linha <- tabela[sel, ]
     updateTextInput(session, "in_servidor_siape", value = linha$siape)
     updateTextInput(session, "in_servidor_nome", value = linha$nome)
@@ -520,16 +531,16 @@ function(input, output, session) {
   observeEvent(input$btn_add_servidor, {
     req(input$in_servidor_siape, input$in_servidor_nome)
     
-    existe <- dbGetQuery(con, "SELECT COUNT(*) FROM servidores WHERE siape = $1",
+    existe <- dbGetQuery(pool, "SELECT COUNT(*) FROM servidores WHERE siape = $1",
                          params = list(input$in_servidor_siape))
     
     if (existe[1,1] > 0) {
       showNotification("⚠️ Este servidor já está cadastrado!", type = "warning")
     } else {
-      dbExecute(con, "INSERT INTO servidores (siape, nome) VALUES ($1, $2)",
+      dbExecute(pool, "INSERT INTO servidores (siape, nome) VALUES ($1, $2)",
                 params = list(input$in_servidor_siape, input$in_servidor_nome))
       output$out_tabela_servidores <- renderDT({
-        dbGetQuery(con, "SELECT * FROM servidores")
+        dbGetQuery(pool, "SELECT * FROM servidores")
       }, selection="single", rownames = FALSE)
       showNotification("✅ Servidor adicionado com sucesso!", type = "message")
     }
@@ -553,19 +564,19 @@ function(input, output, session) {
   observeEvent(input$confirm_edit_servidor, {
     removeModal()
     sel <- input$out_tabela_servidores_rows_selected
-    dados <- dbGetQuery(con, "SELECT * FROM servidores")
+    dados <- dbGetQuery(pool, "SELECT * FROM servidores")
     siape_sel <- dados$siape[sel]
     
-    existe <- dbGetQuery(con, "SELECT COUNT(*) FROM servidores WHERE siape = $1 AND siape != $2",
+    existe <- dbGetQuery(pool, "SELECT COUNT(*) FROM servidores WHERE siape = $1 AND siape != $2",
                          params = list(input$in_servidor_siape, siape_sel))
     
     if (existe[1,1] > 0) {
       showNotification("⚠️ Já existe um servidor com este SIAPE!", type = "warning")
     } else {
-      dbExecute(con, "UPDATE servidores SET siape=$1, nome=$2 WHERE siape=$3",
+      dbExecute(pool, "UPDATE servidores SET siape=$1, nome=$2 WHERE siape=$3",
                 params = list(input$in_servidor_siape, input$in_servidor_nome, siape_sel))
       output$out_tabela_servidores <- renderDT({
-        dbGetQuery(con, "SELECT * FROM servidores")
+        dbGetQuery(pool, "SELECT * FROM servidores")
       }, selection="single", rownames = FALSE)
       showNotification("✏️ Servidor atualizado com sucesso!", type = "message")
     }
@@ -576,10 +587,10 @@ function(input, output, session) {
     sel <- input$out_tabela_servidores_rows_selected
     req(sel)
     
-    tabela <- dbGetQuery(con, "SELECT * FROM servidores")
+    tabela <- dbGetQuery(pool, "SELECT * FROM servidores")
     siape_sel <- tabela$siape[sel]
     
-    entregas <- dbGetQuery(con, "SELECT COUNT(*) FROM entregas WHERE servidor=$1", params = list(siape_sel))
+    entregas <- dbGetQuery(pool, "SELECT COUNT(*) FROM entregas WHERE servidor=$1", params = list(siape_sel))
     
     if (entregas[1,1] > 0) {
       showNotification("❌ Este servidor possui entregas registradas. Remova as entregas antes de excluir.", type="error")
@@ -598,13 +609,13 @@ function(input, output, session) {
   observeEvent(input$confirm_delete_servidor, {
     removeModal()
     sel <- input$out_tabela_servidores_rows_selected
-    tabela <- dbGetQuery(con, "SELECT * FROM servidores")
+    tabela <- dbGetQuery(pool, "SELECT * FROM servidores")
     siape_sel <- tabela$siape[sel]
     
-    dbExecute(con, "DELETE FROM servidores WHERE siape=$1", params = list(siape_sel))
+    dbExecute(pool, "DELETE FROM servidores WHERE siape=$1", params = list(siape_sel))
     
     output$out_tabela_servidores <- renderDT({
-      dbGetQuery(con, "SELECT * FROM servidores")
+      dbGetQuery(pool, "SELECT * FROM servidores")
     }, selection="single", rownames = FALSE)
     
     # Limpar inputs
@@ -622,9 +633,9 @@ function(input, output, session) {
     
     # Dados brutos: admin vê todos, servidor vê apenas os seus
     if (usuario() == "admin") {
-      dados <- dbGetQuery(con, "SELECT * FROM entregas")
+      dados <- dbGetQuery(pool, "SELECT * FROM entregas")
     } else {
-      dados <- dbGetQuery(con, "SELECT * FROM entregas WHERE servidor = $1",
+      dados <- dbGetQuery(pool, "SELECT * FROM entregas WHERE servidor = $1",
                           params = list(usuario()))
     }
     
@@ -686,5 +697,10 @@ function(input, output, session) {
       )
     }
   })
+  
+  session$onSessionEnded(function() {
+    poolClose(pool)
+  })
+  
   
 }
