@@ -15,8 +15,9 @@ con <- dbConnect(
   port     = Sys.getenv("DB_PORT"),
   user     = Sys.getenv("DB_USER"),
   password = Sys.getenv("DB_PASSWORD"),
-  sslmode = "require"
+  sslmode  = Sys.getenv("PGSSLMODE")
 )
+
 
 # UI ----
 ui <- fluidPage(
@@ -66,25 +67,16 @@ server <- function(input, output, session) {
   usuario      <- reactiveVal(NULL)
   nome_usuario <- reactiveVal(NULL)
 
-  
+  registrar_login <- function(siape, sucesso, ip = NULL, user_agent = NULL) {
+    try({
+      dbExecute(con, 
+                "INSERT INTO login_logs (siape, momento, sucesso, ip, user_agent)
+               VALUES ($1, now(), $2, $3, $4)",
+                params = list(siape, sucesso, ip, user_agent))
+    }, silent = TRUE)
+  }
   
   ## LOGIN ----
-  # observeEvent(input$btn_entrar, {
-  #   siape <- input$in_siape
-  #   if (nzchar(siape)) {
-  #     dados <- dbGetQuery(con, "SELECT * FROM servidores WHERE siape = $1", params = list(siape))
-  #     if (siape == "admin") {
-  #       usuario("admin")
-  #       nome_usuario("Administrador")
-  #     } else if (nrow(dados) == 1) {
-  #       usuario(dados$siape[1])
-  #       nome_usuario(dados$nome[1])
-  #     } else {
-  #       showNotification("SIAPE não encontrado.", type = "error")
-  #     }
-  #     
-  #   }
-  # })
   observeEvent(input$btn_entrar, {
     siape <- input$in_siape
     senha  <- input$in_senha
@@ -94,12 +86,14 @@ server <- function(input, output, session) {
     }
     
     # busca o usuário na tabela servidores
-    dados <- dbGetQuery(con, "SELECT siape, nome, senha_hash FROM servidores WHERE siape = $1", params = list(siape))
-    
+    dados <- dbGetQuery(con,
+                        "SELECT siape, nome, senha_hash FROM servidores WHERE siape = $1",
+                        params = list(siape))
     if (nrow(dados) == 1) {
       # se não houver senha cadastrada, nega (ou permitir login sem senha se quiser — mas não recomendado)
       if (is.na(dados$senha_hash) || dados$senha_hash == "") {
-        showNotification("Usuário sem senha configurada. Contate o administrador.", type = "error")
+        showNotification("Usuário sem senha configurada. Contate o administrador.",
+                         type = "error")
         return()
       }
       # verifica a senha usando bcrypt::checkpw
@@ -113,24 +107,13 @@ server <- function(input, output, session) {
         usuario(dados$siape[1])
         nome_usuario(dados$nome[1])
         showNotification(paste("Bem-vindo,", dados$nome[1]), type = "message")
-        
-        # # opcional: registrar login
-        # dbExecute(con, "INSERT INTO login_logs (siape, momento, sucesso) VALUES ($1, now(), TRUE)",
-        #           params = list(dados$siape[1]))
       } else {
         showNotification("SIAPE ou senha incorretos.", type = "error")
-        # opcional: registrar tentativa falha
-        # dbExecute(con, "INSERT INTO login_logs (siape, momento, sucesso) VALUES ($1, now(), FALSE)",
-        #           params = list(siape))
       }
-      
     } else {
       showNotification("SIAPE não encontrado.", type = "error")
-      # dbExecute(con, "INSERT INTO login_logs (siape, momento, sucesso) VALUES ($1, now(), FALSE)",
-      #           params = list(siape))
     }
   })
-  
   
   ## Dados auxiliares----
   codigos_validos <- reactive({
@@ -143,28 +126,7 @@ server <- function(input, output, session) {
   dados_codigos    <- reactiveVal(data.frame())
   
   ## Atualização ao logar----
-  # observe({
-  #   req(usuario())
-  #   
-  #   entregas    <- dbGetQuery(con, "SELECT * FROM entregas WHERE servidor = $1", params = list(usuario()))
-  #   todos_dados <- dbGetQuery(con, "SELECT * FROM entregas")
-  #   
-  #   updateSelectInput(session, "in_filtro_ano",
-  #                     choices = c("Todos", sort(unique(format(as.Date(todos_dados$data), "%Y")))))
-  #   updateSelectInput(session, "in_filtro_mes",
-  #                     choices = c("Todos", sort(unique(format(as.Date(todos_dados$data), "%m")))))
-  #   updateSelectInput(session, "in_filtro_servidor",
-  #                     choices = c("Todos", sort(unique(todos_dados$servidor))))
-  #   updateSelectInput(session, "in_filtro_codigo",
-  #                     choices = c("Todos", sort(unique(todos_dados$codigo))))
-  #   
-  #   dados_entregas(entregas)
-  #   
-  #   if (usuario() == "admin") {
-  #     dados_servidores(dbGetQuery(con, "SELECT * FROM servidores"))
-  #     dados_codigos(dbGetQuery(con, "SELECT * FROM codigos_entrega"))
-  #   }
-  # })
+  
   observe({
     req(usuario())
     
@@ -203,19 +165,6 @@ server <- function(input, output, session) {
     req(usuario())
     
     abas <- list(
-      # tabPanel("Relatórios",
-      #          br(),
-      #          p("Nesta aba você pode visualizar relatórios das entregas, filtrando por ano, mês, servidor ou código.", class = "texto-explicativo"),
-      #          br(),
-      #          fluidRow(
-      #            column(3, selectInput("in_filtro_ano", "Ano:", choices = NULL)),
-      #            column(3, selectInput("in_filtro_mes", "Mês:", choices = NULL)),
-      #            column(3, selectInput("in_filtro_servidor", "Servidor:", choices = NULL)),
-      #            column(3, selectInput("in_filtro_codigo", "Código:", choices = NULL))
-      #          ),
-      #          br(),
-      #          DTOutput("out_tabela_relatorio")
-      # )
       tabPanel("Relatórios",
                br(),
                p("Nesta aba você pode visualizar relatórios das entregas, filtrando por ano, mês, servidor ou código.", class = "texto-explicativo"),
@@ -345,12 +294,7 @@ server <- function(input, output, session) {
       )
     )
   }
-  
-  
-  
-  
-  
-  
+
   ## --- Aplicando nas tabelas ---
   output$out_tabela_entregas <- renderDT({
     tabela_padrao(dados_entregas(), selection = "single")
@@ -700,127 +644,6 @@ server <- function(input, output, session) {
   
   
   # --- Relatório ----
-  # output$out_tabela_relatorio <- renderDT({
-  #   req(dados_entregas())  # garante que dados_entregas() existe
-  # 
-  #   dados <- dados_entregas()  # pega os dados do reactiveVal atualizado pelo CRUD
-  # 
-  #   # aplica filtros
-  #   if (!is.null(input$in_filtro_ano) && input$in_filtro_ano != "Todos")
-  #     dados <- subset(dados, format(as.Date(data), "%Y") == input$in_filtro_ano)
-  #   if (!is.null(input$in_filtro_mes) && input$in_filtro_mes != "Todos")
-  #     dados <- subset(dados, format(as.Date(data), "%m") == input$in_filtro_mes)
-  #   if (!is.null(input$in_filtro_servidor) && input$in_filtro_servidor != "Todos")
-  #     dados <- subset(dados, servidor == input$in_filtro_servidor)
-  #   if (!is.null(input$in_filtro_codigo) && input$in_filtro_codigo != "Todos")
-  #     dados <- subset(dados, codigo == input$in_filtro_codigo)
-  # 
-  #   # Se não houver dados, mostra mensagem
-  #   if (nrow(dados) == 0) {
-  #     return(datatable(
-  #       data.frame(Mensagem = "Nenhum registro encontrado para os filtros selecionados."),
-  #       options = list(dom = 't')
-  #     ))
-  #   }
-  # 
-  #   # Criar colunas de ano e mês
-  #   dados$ano <- format(as.Date(dados$data), "%Y")
-  #   dados$mes <- format(as.Date(dados$data), "%m")
-  # 
-  #   # Resumo por ano, mês e código
-  #   resumo <- aggregate(cbind(entregas, horas) ~ ano + mes + codigo, data = dados, FUN = sum)
-  # 
-  #   # Total de horas por mês
-  #   total_mes <- aggregate(horas ~ ano + mes, data = dados, FUN = sum)
-  # 
-  #   # Percentual sobre horas
-  #   resumo$percentual <- round((resumo$horas / total_mes$horas[
-  #     match(paste(resumo$ano, resumo$mes), paste(total_mes$ano, total_mes$mes))
-  #   ]) * 100, 1)
-  # 
-  #   # Retorna tabela
-  #   tabela_padrao(resumo)
-  # })
-  
-  
-  
-  # output$out_tabela_relatorio <- renderDT({
-  #   dados <- dbGetQuery(con, "SELECT * FROM entregas")
-  # 
-  #   if (!is.null(input$in_filtro_ano) && input$in_filtro_ano != "Todos") dados <- subset(dados, format(as.Date(data), "%Y") == input$in_filtro_ano)
-  #   if (!is.null(input$in_filtro_mes) && input$in_filtro_mes != "Todos") dados <- subset(dados, format(as.Date(data), "%m") == input$in_filtro_mes)
-  #   if (!is.null(input$in_filtro_servidor) && input$in_filtro_servidor != "Todos") dados <- subset(dados, servidor == input$in_filtro_servidor)
-  #   if (!is.null(input$in_filtro_codigo) && input$in_filtro_codigo != "Todos") dados <- subset(dados, codigo == input$in_filtro_codigo)
-  # 
-  #   dados$ano <- format(as.Date(dados$data), "%Y")
-  #   dados$mes <- format(as.Date(dados$data), "%m")
-  # 
-  #   resumo <- aggregate(cbind(entregas, horas) ~ ano + mes + codigo, data = dados, FUN = sum)
-  #   total_mes <- aggregate(horas ~ ano + mes, data = dados, FUN = sum)
-  # 
-  #   resumo$percentual <- round((resumo$horas / total_mes$horas[
-  #     match(paste(resumo$ano, resumo$mes), paste(total_mes$ano, total_mes$mes))
-  #   ]) * 100, 1)
-  # 
-  #   datatable(resumo, rownames = FALSE,
-  #             colnames = c("Ano", "Mês", "Código", "Entregas", "Horas", "% do mês"),
-  #             options = list(pageLength = 12))
-  # })
-  
-  # output$out_tabela_relatorio <- renderDT({
-  #   req(usuario())
-  #   
-  #   # Se for admin, pega todas; se não, só do servidor logado
-  #   if (usuario() == "admin") {
-  #     dados <- dbGetQuery(con, "SELECT * FROM entregas")
-  #   } else {
-  #     dados <- dbGetQuery(con, "SELECT * FROM entregas WHERE servidor = $1",
-  #                         params = list(usuario()))
-  #   }
-  #   
-  #   # Filtros
-  #   if (!is.null(input$in_filtro_ano) && input$in_filtro_ano != "Todos") 
-  #     dados <- subset(dados, format(as.Date(data), "%Y") == input$in_filtro_ano)
-  #   if (!is.null(input$in_filtro_mes) && input$in_filtro_mes != "Todos") 
-  #     dados <- subset(dados, format(as.Date(data), "%m") == input$in_filtro_mes)
-  #   if (!is.null(input$in_filtro_servidor) && input$in_filtro_servidor != "Todos") 
-  #     dados <- subset(dados, servidor == input$in_filtro_servidor)
-  #   if (!is.null(input$in_filtro_codigo) && input$in_filtro_codigo != "Todos") 
-  #     dados <- subset(dados, codigo == input$in_filtro_codigo)
-  #   
-  #   if (nrow(dados) == 0) {
-  #     return(datatable(
-  #       data.frame(Mensagem = "Nenhum registro encontrado para os filtros selecionados."),
-  #       options = list(dom = 't'),
-  #       rownames = FALSE
-  #     ))
-  #   }
-  #   
-  #   # Criar colunas de ano e mês
-  #   dados$ano <- format(as.Date(dados$data), "%Y")
-  #   dados$mes <- format(as.Date(dados$data), "%m")
-  #   
-  #   # Resumo por servidor, ano, mês e código
-  #   resumo <- aggregate(cbind(entregas, horas) ~ servidor + ano + mes + codigo,
-  #                       data = dados, FUN = sum)
-  #   
-  #   # Total de horas por servidor/ano/mês
-  #   total_mes <- aggregate(horas ~ servidor + ano + mes, data = dados, FUN = sum)
-  #   
-  #   # Percentual sobre horas no mês (por servidor)
-  #   resumo$percentual <- round((resumo$horas / total_mes$horas[
-  #     match(paste(resumo$servidor, resumo$ano, resumo$mes),
-  #           paste(total_mes$servidor, total_mes$ano, total_mes$mes))
-  #   ]) * 100, 1)
-  #   
-  #   
-  #   datatable(resumo, rownames = FALSE,
-  #             colnames = c("Servidor", "Ano", "Mês", "Código", "Entregas", "Horas", "% do mês"),
-  #             options = list(pageLength = 12))
-  #   
-  # })
-  
-  
   output$out_tabela_relatorio <- renderDT({
     req(usuario())
     
@@ -890,8 +713,6 @@ server <- function(input, output, session) {
       )
     }
   })
-  
-  
   
 }
 

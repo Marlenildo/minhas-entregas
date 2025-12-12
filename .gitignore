@@ -1,6 +1,21 @@
-# Arquivos que não vão para o Git
-.Renviron
+# R
 .Rhistory
+.RData
 .Rproj.user/
-*.xlsx
 
+# Shiny
+rsconnect/
+*.log
+
+# Ambiente / segredos
+.Renviron
+.env
+.env.*
+
+# Banco / backups
+*.sql
+*.dump
+
+# Sistema
+Thumbs.db
+.DS_Store
