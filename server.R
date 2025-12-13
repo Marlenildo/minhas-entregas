@@ -16,8 +16,7 @@ APP_VERSION <- tryCatch(
 )
 
 function(input, output, session) {
-  
-  
+
   usuario      <- reactiveVal(NULL)
   nome_usuario <- reactiveVal(NULL)
   
@@ -169,6 +168,22 @@ function(input, output, session) {
     ## Administração----
     if (usuario() == "admin") {
       abas <- c(abas, list(
+        tabPanel(
+          "Gerenciar Anos",
+          br(),
+          p("Aqui você pode criar, abrir ou fechar anos de ciclo do sistema.", class = "texto-explicativo"),
+          br(),
+          DTOutput("out_tabela_anos"),
+          br(),
+          fluidRow(
+            column(4, numericInput("in_ano", "Ano:", value = as.integer(format(Sys.Date(), "%Y")))),
+            column(4, selectInput("in_status_ano", "Status:", choices = c("aberto", "fechado")))
+          ),
+          actionButton("btn_add_ano", "Adicionar", class = "btn-success", icon = icon("plus")),
+          actionButton("btn_edit_ano", "Editar", class = "btn-warning", icon = icon("pen-to-square")),
+          actionButton("btn_del_ano", "Remover", class = "btn-danger", icon = icon("trash"))
+        ),
+        
         tabPanel("Todos os dados", 
                  br(),
                  p("Aqui você, como administrador, pode visualizar todas as entregas registradas no sistema.", class = "texto-explicativo"),
@@ -276,7 +291,119 @@ function(input, output, session) {
     tabela_padrao(dados_codigos)
   }, selection = "single")
   
-  # --- CRUD entregas -----
+  output$out_tabela_anos <- renderDT({
+    dados_anos <- dbGetQuery(pool, "SELECT * FROM anos_ciclo ORDER BY ano DESC")
+    tabela_padrao(dados_anos)
+  }, selection = "single")
+  
+  
+  # --- CRUD anos -----
+  observeEvent(input$out_tabela_anos_rows_selected, {
+    sel <- input$out_tabela_anos_rows_selected
+    req(sel)
+    
+    dados <- dbGetQuery(pool, "SELECT * FROM anos_ciclo ORDER BY ano DESC")
+    linha <- dados[sel, ]
+    
+    updateNumericInput(session, "in_ano", value = linha$ano)
+    updateSelectInput(session, "in_status_ano", selected = linha$status)
+  })
+  
+  # SELECIONAR UM ANO E PREENCHER INPUTS
+  observeEvent(input$out_tabela_anos_rows_selected, {
+    sel <- input$out_tabela_anos_rows_selected
+    req(sel)
+    
+    dados <- dbGetQuery(pool, "SELECT * FROM anos_ciclo ORDER BY ano DESC")
+    linha <- dados[sel, ]
+    
+    updateNumericInput(session, "in_ano", value = linha$ano)
+    updateSelectInput(session, "in_status_ano", selected = linha$status)
+  })
+  # ADICIONAR ANO
+  observeEvent(input$btn_add_ano, {
+    req(input$in_ano, input$in_status_ano)
+    
+    existe <- dbGetQuery(
+      pool,
+      "SELECT COUNT(*) FROM anos_ciclo WHERE ano = $1",
+      params = list(input$in_ano)
+    )
+    
+    if (existe[1,1] > 0) {
+      showNotification("⚠️ Este ano já existe.", type = "warning")
+      return()
+    }
+    
+    dbExecute(
+      pool,
+      "INSERT INTO anos_ciclo (ano, status) VALUES ($1, $2)",
+      params = list(input$in_ano, input$in_status_ano)
+    )
+    
+    showNotification("✅ Ano adicionado com sucesso!", type = "message")
+    
+    output$out_tabela_anos <- renderDT({
+      tabela_padrao(dbGetQuery(pool, "SELECT * FROM anos_ciclo ORDER BY ano DESC"))
+    })
+  })
+  
+  
+  # EDITAR ANO (ABRIR / FECHAR)
+  # ⚠️ Regra importante: só pode existir 1 ano aberto.
+  observeEvent(input$btn_edit_ano, {
+    req(input$out_tabela_anos_rows_selected)
+    
+    if (input$in_status_ano == "aberto") {
+      # Fecha todos os outros
+      dbExecute(pool, "UPDATE anos_ciclo SET status = 'fechado'")
+    }
+    
+    dbExecute(
+      pool,
+      "UPDATE anos_ciclo SET status = $1 WHERE ano = $2",
+      params = list(input$in_status_ano, input$in_ano)
+    )
+    
+    showNotification("✏️ Ano atualizado com sucesso!", type = "message")
+    
+    output$out_tabela_anos <- renderDT({
+      tabela_padrao(dbGetQuery(pool, "SELECT * FROM anos_ciclo ORDER BY ano DESC"))
+    })
+  })
+  
+  
+  # REMOVER ANO (COM SEGURANÇA)
+  # Nunca permitir apagar ano que tenha entregas.
+  observeEvent(input$btn_del_ano, {
+    req(input$out_tabela_anos_rows_selected)
+    
+    qtd <- dbGetQuery(
+      pool,
+      "SELECT COUNT(*) FROM entregas WHERE ano = $1",
+      params = list(input$in_ano)
+    )
+    
+    if (qtd[1,1] > 0) {
+      showNotification("❌ Este ano possui entregas registradas.", type = "error")
+      return()
+    }
+    
+    dbExecute(
+      pool,
+      "DELETE FROM anos_ciclo WHERE ano = $1",
+      params = list(input$in_ano)
+    )
+    
+    showNotification("🗑️ Ano removido com sucesso!", type = "message")
+    
+    output$out_tabela_anos <- renderDT({
+      tabela_padrao(dbGetQuery(pool, "SELECT * FROM anos_ciclo ORDER BY ano DESC"))
+    })
+  })
+  
+  
+   # --- CRUD entregas -----
   #### --- Adicionar entrega ---
   observeEvent(input$btn_add, {
     req(usuario())
