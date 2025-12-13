@@ -83,3 +83,42 @@ footer img {
   font-size: 14px;
   margin-bottom: 10px;
 }
+
+
+/* ================================
+   Status do Ano do Ciclo
+   ================================ */
+/* Wrapper para alinhar status do ano com o select e Wrapper mantém alinhamento correto */
+.status-ano-wrapper {
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+  margin-top: 24px;
+}
+
+/* Caixa do status com MESMA altura do selectInput */
+.status-ano {
+  height: 38px;                 /* altura padrão do selectInput */
+  line-height: 38px;            /* centraliza o texto verticalmente */
+  padding: 0 14px;              /* apenas lateral */
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Ano aberto */
+.status-ano.aberto {
+  background-color: #e6f4ea;
+  border: 1px solid #6dd47e;
+  color: #1e7e34;
+}
+
+/* Ano fechado */
+.status-ano.fechado {
+  background-color: #fdecea;
+  border: 1px solid #f5c2c7;
+  color: #b02a37;
+}

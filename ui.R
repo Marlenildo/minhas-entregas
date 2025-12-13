@@ -5,7 +5,7 @@ library(DBI)
 library(RPostgres)
 library(DT)
 library(pool)
-
+library(shinyjs)
 
 # Conexão com PostgreSQL ----
 pool <- dbPool(
@@ -24,6 +24,7 @@ pool <- dbPool(
 
 # UI ----
 fluidPage(
+  shinyjs::useShinyjs(),
   tags$head(
     includeCSS("www/estilo.css")
   ),
