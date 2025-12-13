@@ -1,11 +1,11 @@
-#' Data da última atualização: [02/12/2025]
+#' Data da última atualização: [13/12/2025]
 
 library(shiny)
 library(DBI)
 library(RPostgres)
 library(DT)
 library(pool)
-
+library(shinyjs)
 
 # Conexão com PostgreSQL ----
 pool <- dbPool(
@@ -24,6 +24,7 @@ pool <- dbPool(
 
 # UI ----
 fluidPage(
+  shinyjs::useShinyjs(),
   tags$head(
     includeCSS("www/estilo.css")
   ),
