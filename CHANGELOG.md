@@ -1,7 +1,18 @@
 # Changelog – app_entregas
 
+---
 ## [Unreleased]
 - Em desenvolvimento
+
+
+---
+## [2.0.0] – 2025-12-13
+### Added
+- Seletor de ano do ciclo na aba Minhas entregas
+- Bloqueio de edição/inserção/remoção quando ano estiver fechado
+### Changed
+- Restrição de data ao intervalo do ano selecionado
+- Ajustes de UI/estado visual (aberto/fechado)
 
 ---
 ## [1.2.0] – 2025-12-12
