@@ -10,6 +10,10 @@
 ### Added
 - Seletor de ano do ciclo na aba Minhas entregas
 - Bloqueio de edição/inserção/remoção quando ano estiver fechado
+- Bloqueio de inserção, edição e remoção em anos fechados
+- Restrição automática de datas ao ano selecionado
+- Indicador visual de status do ano (aberto/fechado)
+
 ### Changed
 - Restrição de data ao intervalo do ano selecionado
 - Ajustes de UI/estado visual (aberto/fechado)
