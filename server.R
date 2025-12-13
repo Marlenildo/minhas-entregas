@@ -118,9 +118,6 @@ function(input, output, session) {
     }
   })
 
-
-  
-  
       
   ## Bloqueio visual quando ano fechado ----
   observe({
