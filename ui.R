@@ -7,6 +7,10 @@ library(DT)
 library(pool)
 library(shinyjs)
 
+
+source("global.R")
+
+
 # Conexão com PostgreSQL ----
 pool <- dbPool(
   drv      = RPostgres::Postgres(),

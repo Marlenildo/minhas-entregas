@@ -4,20 +4,14 @@ library(DBI)
 library(RPostgres)
 library(DT)
 library(pool)
+library(shinyjs)
 
+source("global.R")
 
-
-# -------------------------------
-# Versão do aplicativo
-# -------------------------------
-APP_VERSION <- tryCatch(
-  readLines("VERSION", warn = FALSE),
-  error = function(e)
-    "dev"
-)
 
 function(input, output, session) {
-  usuario      <- reactiveVal(NULL)
+
+    usuario      <- reactiveVal(NULL)
   nome_usuario <- reactiveVal(NULL)
   
   registrar_login <- function(siape,
