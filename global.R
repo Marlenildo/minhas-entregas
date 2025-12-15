@@ -40,6 +40,6 @@ pool_read <- dbPool(
 )
 
 onStop(function() {
-  poolClose(pool_write)
-  poolClose(pool_read)
+  try(pool::poolClose(pool_read), silent = TRUE)
+  try(pool::poolClose(pool_write), silent = TRUE)
 })

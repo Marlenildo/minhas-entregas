@@ -1203,9 +1203,5 @@ function(input, output, session) {
     }
   })
   
-  session$onSessionEnded(function() {
-    poolClose(pool)
-  })
-  
-  
+
 }
