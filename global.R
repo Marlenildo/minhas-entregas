@@ -16,14 +16,30 @@ APP_VERSION <- tryCatch(
 # -------------------------------
 # Pool de conexões PostgreSQL
 # -------------------------------
-pool <- dbPool(
+
+# Pool de ESCRITA
+pool_write <- dbPool(
   drv      = RPostgres::Postgres(),
   dbname   = Sys.getenv("DB_NAME"),
   host     = Sys.getenv("DB_HOST"),
   port     = Sys.getenv("DB_PORT"),
-  user     = Sys.getenv("DB_USER"),
-  password = Sys.getenv("DB_PASSWORD"),
-  sslmode  = Sys.getenv("PGSSLMODE"),
-  minSize  = 1,
-  maxSize  = 10
+  user     = Sys.getenv("DB_USER_WRITE"),
+  password = Sys.getenv("DB_PASSWORD_WRITE"),
+  sslmode  = Sys.getenv("PGSSLMODE")
 )
+
+# Pool de LEITURA
+pool_read <- dbPool(
+  drv      = RPostgres::Postgres(),
+  dbname   = Sys.getenv("DB_NAME"),
+  host     = Sys.getenv("DB_HOST"),
+  port     = Sys.getenv("DB_PORT"),
+  user     = Sys.getenv("DB_USER_READ"),
+  password = Sys.getenv("DB_PASSWORD_READ"),
+  sslmode  = Sys.getenv("PGSSLMODE")
+)
+
+onStop(function() {
+  poolClose(pool_write)
+  poolClose(pool_read)
+})
