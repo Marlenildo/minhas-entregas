@@ -171,15 +171,23 @@ function(input, output, session) {
     req(input$in_ano_ciclo)
     
     ano <- ano_ciclo()
+    hoje <- Sys.Date()
+    
+    data_padrao <- if (format(hoje, "%Y") == as.character(ano)) {
+      hoje
+    } else {
+      as.Date(paste0(ano, "-01-01"))
+    }
     
     updateDateInput(
       session,
       "in_data",
-      value = as.Date(paste0(ano, "-01-01")),
+      value = data_padrao,
       min   = as.Date(paste0(ano, "-01-01")),
       max   = as.Date(paste0(ano, "-12-31"))
     )
   })
+  
   
   ## atualizar entregas ao trocar ano ----
   observeEvent(input$in_ano_ciclo, {
