@@ -4,6 +4,18 @@
 ## [Unreleased]
 - Em desenvolvimento
 
+---
+## [2.1.0] - 2025-12-15
+### Added
+- Separação de pool de leitura e escrita no banco de dados.
+- Finalização segura das conexões via onStop().
+
+### Changed
+- Ajuste da configuração de credenciais via .Renviron.
+- Refatoração das chamadas ao banco para maior segurança e desempenho.
+
+### Fixed
+- Possível vazamento de conexões em reinício do app.
 
 ---
 ## [2.0.0] – 2025-12-13
