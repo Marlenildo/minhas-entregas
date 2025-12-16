@@ -598,11 +598,31 @@ function(input, output, session) {
   
   # EDITAR ANO (ABRIR / FECHAR)
   # ⚠️ Regra importante: só pode existir 1 ano aberto.
+  # EDITAR ANO (CONFIRMAÇÃO)
   observeEvent(input$btn_edit_ano, {
     req(input$out_tabela_anos_rows_selected)
     
+    showModal(
+      modalDialog(
+        title = "Confirmação",
+        paste("Deseja realmente alterar o status do ano", input$in_ano, "?"),
+        footer = tagList(
+          modalButton("Cancelar"),
+          actionButton(
+            "confirm_edit_ano",
+            "Editar",
+            class = "btn-warning",
+            icon = icon("pen-to-square")
+          )
+        )
+      )
+    )
+  })
+  
+  observeEvent(input$confirm_edit_ano, {
+    removeModal()
+    
     if (input$in_status_ano == "aberto") {
-      # Fecha todos os outros
       dbExecute(pool_write, "UPDATE anos_ciclo SET status = 'fechado'")
     }
     
@@ -620,23 +640,49 @@ function(input, output, session) {
   })
   
   
+  
   # REMOVER ANO (COM SEGURANÇA)
   # Nunca permitir apagar ano que tenha entregas.
+  # REMOVER ANO (CONFIRMAÇÃO)
   observeEvent(input$btn_del_ano, {
     req(input$out_tabela_anos_rows_selected)
     
-    qtd <- dbGetQuery(pool_read,
-                      "SELECT COUNT(*) FROM entregas WHERE ano = $1",
-                      params = list(input$in_ano))
+    qtd <- dbGetQuery(
+      pool_read,
+      "SELECT COUNT(*) FROM entregas WHERE ano = $1",
+      params = list(input$in_ano)
+    )
     
     if (qtd[1, 1] > 0) {
       showNotification("❌ Este ano possui entregas registradas.", type = "error")
       return()
     }
     
-    dbExecute(pool_write,
-              "DELETE FROM anos_ciclo WHERE ano = $1",
-              params = list(input$in_ano))
+    showModal(
+      modalDialog(
+        title = "Confirmação",
+        paste("Deseja realmente remover o ano", input$in_ano, "?"),
+        footer = tagList(
+          modalButton("Cancelar"),
+          actionButton(
+            "confirm_delete_ano",
+            "Remover",
+            class = "btn-danger",
+            icon = icon("trash")
+          )
+        )
+      )
+    )
+  })
+  
+  observeEvent(input$confirm_delete_ano, {
+    removeModal()
+    
+    dbExecute(
+      pool_write,
+      "DELETE FROM anos_ciclo WHERE ano = $1",
+      params = list(input$in_ano)
+    )
     
     showNotification("🗑️ Ano removido com sucesso!", type = "message")
     
@@ -644,6 +690,8 @@ function(input, output, session) {
       tabela_padrao(dbGetQuery(pool_read, "SELECT * FROM anos_ciclo ORDER BY ano DESC"))
     })
   })
+  
+  
   
   
   # --- CRUD entregas -----
