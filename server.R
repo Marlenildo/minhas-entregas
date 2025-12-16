@@ -278,12 +278,16 @@ function(input, output, session) {
     
     anos <- anos_disponiveis()
     
+    ano_aberto <- anos$ano[anos$status == "aberto"][1]
+    ano_padrao <- if (!is.na(ano_aberto)) {
+      ano_aberto
+    } else {
+      max(anos$ano, na.rm = TRUE)
+    }
     updateSelectInput(session,
                       "in_ano_ciclo",
-                      choices = anos$ano,
-                      selected = anos$ano[anos$status == "aberto"][1])
-    
-    
+                      choices  = anos$ano,
+                      selected = ano_padrao)
   })
   
   
