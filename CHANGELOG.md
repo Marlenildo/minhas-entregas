@@ -5,6 +5,21 @@ Todas as alterações relevantes do App Entregas são documentadas aqui.
 ## [Unreleased]
 - Em desenvolvimento
 
+---
+## [2.2.1] - 2025-12-16
+
+### Added
+- Auditoria administrativa para ações sobre anos de ciclo.
+- Visualização do histórico de auditoria no painel do administrador.
+
+### Changed
+- Reorganização da ordem das abas no painel administrativo.
+- Seleção automática do ano aberto ou mais recente na aba “Minhas entregas”.
+
+### Fixed
+- Ajustes de governança no controle de anos e permissões.
+
+---
 ## [2.2.0] - 2025-12-16
 
 ### Adicionado
