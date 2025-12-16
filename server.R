@@ -278,12 +278,16 @@ function(input, output, session) {
     
     anos <- anos_disponiveis()
     
+    ano_aberto <- anos$ano[anos$status == "aberto"][1]
+    ano_padrao <- if (!is.na(ano_aberto)) {
+      ano_aberto
+    } else {
+      max(anos$ano, na.rm = TRUE)
+    }
     updateSelectInput(session,
                       "in_ano_ciclo",
-                      choices = anos$ano,
-                      selected = anos$ano[anos$status == "aberto"][1])
-    
-    
+                      choices  = anos$ano,
+                      selected = ano_padrao)
   })
   
   
@@ -386,6 +390,18 @@ function(input, output, session) {
     ## Administração----
     if (usuario() == "admin") {
       abas <- c(abas, list(
+        # UI (Admin -> Visualizar todos os dados)----
+        tabPanel(
+          "Todos os dados",
+          br(),
+          p(
+            "Aqui você, como administrador, pode visualizar todas as entregas registradas no sistema.",
+            class = "texto-explicativo"
+          ),
+          br(),
+          DTOutput("out_tabela_todos")
+        ),
+        # UI (Admin -> Gerenciar Anos)----
         tabPanel(
           "Gerenciar Anos",
           br(),
@@ -435,18 +451,6 @@ function(input, output, session) {
           DTOutput("out_tabela_audit_anos")
           
         ),
-        
-        tabPanel(
-          "Todos os dados",
-          br(),
-          p(
-            "Aqui você, como administrador, pode visualizar todas as entregas registradas no sistema.",
-            class = "texto-explicativo"
-          ),
-          br(),
-          DTOutput("out_tabela_todos")
-        ),
-        
         #' -------------------
         # UI (Admin -> Gerenciar Códigos)----
         #' -------------------
