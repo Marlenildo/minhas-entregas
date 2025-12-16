@@ -650,7 +650,7 @@ function(input, output, session) {
   #### --- Adicionar entrega ---
   
   observeEvent(input$btn_add, {
-    req(usuario())
+    req(usuario(), ano_ciclo())
     
     if (!ano_esta_aberto()) {
       showNotification("🔒 Ano fechado. Não é possível inserir entregas.", type = "error")
@@ -660,9 +660,12 @@ function(input, output, session) {
     # Inserir no banco
     dbExecute(
       pool_write,
-      "INSERT INTO entregas (data, codigo, entregas, horas, status, servidor) VALUES ($1, $2, $3, $4, $5, $6)",
+      "INSERT INTO entregas 
+   (data, ano, codigo, entregas, horas, status, servidor) 
+   VALUES ($1, $2, $3, $4, $5, $6, $7)",
       params = list(
         as.character(input$in_data),
+        ano_ciclo(),
         input$in_codigo,
         input$in_entregas,
         input$in_horas,
@@ -670,6 +673,7 @@ function(input, output, session) {
         usuario()
       )
     )
+    
     
     #### Atualizar dados e tabela---
     dados_entregas(

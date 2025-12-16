@@ -43,3 +43,4 @@ onStop(function() {
   try(pool::poolClose(pool_read), silent = TRUE)
   try(pool::poolClose(pool_write), silent = TRUE)
 })
+

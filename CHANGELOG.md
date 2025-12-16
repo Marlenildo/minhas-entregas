@@ -1,8 +1,19 @@
 # Changelog – app_entregas
 
+# Changelog
+Todas as alterações relevantes do App Entregas são documentadas aqui.
+
 ---
 ## [Unreleased]
 - Em desenvolvimento
+
+---
+## [2.1.1] - 2025-12-16
+### Corrigido
+- Correção crítica no INSERT da tabela `entregas`, passando explicitamente a coluna `ano`
+- Ajuste para compatibilidade com trigger `bloquear_ano_fechado`
+- Eliminação do erro "Ano <NULL> não está cadastrado em anos_ciclo"
+- Estabilização do uso de `pool_read` e `pool_write` após falha de trigger
 
 ---
 ## [2.1.0] - 2025-12-15
