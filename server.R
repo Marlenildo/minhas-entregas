@@ -618,7 +618,6 @@ function(input, output, session) {
       )
     )
   })
-  
   observeEvent(input$confirm_edit_ano, {
     removeModal()
     
@@ -641,8 +640,11 @@ function(input, output, session) {
   
   
   
+  
+  
   # REMOVER ANO (COM SEGURANÇA)
   # Nunca permitir apagar ano que tenha entregas.
+  # REMOVER ANO (CONFIRMAÇÃO)
   # REMOVER ANO (CONFIRMAÇÃO)
   observeEvent(input$btn_del_ano, {
     req(input$out_tabela_anos_rows_selected)
@@ -674,7 +676,6 @@ function(input, output, session) {
       )
     )
   })
-  
   observeEvent(input$confirm_delete_ano, {
     removeModal()
     
