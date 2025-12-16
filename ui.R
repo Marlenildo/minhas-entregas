@@ -13,9 +13,7 @@ source("global.R")
 # UI ----
 fluidPage(
   shinyjs::useShinyjs(),
-  tags$head(
-    includeCSS("www/estilo.css")
-  ),
+  tags$head(includeCSS("www/estilo.css")),
   
   ## Cabeçalho----
   div(
@@ -26,31 +24,28 @@ fluidPage(
   ),
   
   ## Login----
-  # div(
-  #   style = "display:flex; flex-direction:column; align-items:center; margin-top:50px;",
-  #   textInput("in_siape", "Digite seu SIAPE:"),
-  #   actionButton("btn_entrar", "Entrar", class = "btn-primary")
-  # ),
   div(
     style = "display:flex; flex-direction:column; align-items:center; margin-top:50px;",
     textInput("in_siape", "Digite seu SIAPE:"),
-    passwordInput("in_senha", "Senha:"),                # <- novo campo
+    passwordInput("in_senha", "Senha:"),
     actionButton("btn_entrar", "Entrar", class = "btn-primary")
   ),
   
-  br(), hr(),
+  br(),
+  hr(),
   
   ## Conteúdo principal----
   uiOutput("out_conteudo"),
-  br(), br(), br(), hr(),
+  br(),
+  br(),
+  br(),
+  hr(),
   
   ## Rodapé ----
   tags$footer(
     class = "footer",
     # Logos
-    div(
-      img(src = "logo_index.png")
-    ),
+    div(img(src = "logo_index.png")),
     
     div(
       class = "footer-version",
