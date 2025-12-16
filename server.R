@@ -11,7 +11,8 @@ source("global.R")
 
 
 function(input, output, session) {
-  # CRIAR O HELPER confirm_action()
+  # 1. HELPER DE AUDITORIA
+  # 1.1 CRIAR O HELPER confirm_action()
   # 📌 O que isso resolve
   # Elimina duplicação de modalDialog
   # Centraliza UX
@@ -22,25 +23,47 @@ function(input, output, session) {
                              label_confirm = "Confirmar",
                              class_confirm = "btn-danger",
                              icon_confirm = icon("check")) {
-    showModal(
-      modalDialog(
-        title = title,
-        message,
-        footer = tagList(
-          modalButton("Cancelar"),
-          actionButton(
-            id_confirm,
-            label_confirm,
-            class = class_confirm,
-            icon = icon_confirm
-          )
+    showModal(modalDialog(
+      title = title,
+      message,
+      footer = tagList(
+        modalButton("Cancelar"),
+        actionButton(
+          id_confirm,
+          label_confirm,
+          class = class_confirm,
+          icon = icon_confirm
         )
       )
-    )
+    ))
+  }
+  # 1.2 ADICIONAR HELPER DE AUDITORIA
+  # 🔒 Observação importante:
+  #   try(..., silent = TRUE) → auditoria nunca derruba o app
+  #   Se falhar, o usuário nem percebe
+  registrar_auditoria <- function(acao, entidade, referencia = NULL) {
+    try({
+      dbExecute(
+        pool_write,
+        "
+      INSERT INTO audit_logs
+        (usuario, acao, entidade, referencia, ip, user_agent)
+      VALUES
+        ($1, $2, $3, $4, $5, $6)
+      ",
+        params = list(
+          usuario(),
+          acao,
+          entidade,
+          referencia,
+          session$request$REMOTE_ADDR,
+          session$request$HTTP_USER_AGENT
+        )
+      )
+    }, silent = TRUE)
   }
   
-
-    usuario      <- reactiveVal(NULL)
+  usuario      <- reactiveVal(NULL)
   nome_usuario <- reactiveVal(NULL)
   
   registrar_login <- function(siape,
@@ -60,7 +83,6 @@ function(input, output, session) {
   
   ## LOGIN ----
   observeEvent(input$btn_entrar, {
-    
     siape <- input$in_siape
     senha <- input$in_senha
     
@@ -76,12 +98,9 @@ function(input, output, session) {
     )
     
     if (nrow(dados) == 1) {
-      
       if (is.na(dados$senha_hash) || dados$senha_hash == "") {
-        showNotification(
-          "Usuário sem senha configurada. Contate o administrador.",
-          type = "error"
-        )
+        showNotification("Usuário sem senha configurada. Contate o administrador.",
+                         type = "error")
         return()
       }
       
@@ -91,7 +110,6 @@ function(input, output, session) {
       }, silent = TRUE)
       
       if (isTRUE(ok)) {
-        
         usuario(dados$siape[1])
         nome_usuario(dados$nome[1])
         
@@ -102,13 +120,9 @@ function(input, output, session) {
           user_agent = session$request$HTTP_USER_AGENT
         )
         
-        showNotification(
-          paste("Bem-vindo,", dados$nome[1]),
-          type = "message"
-        )
+        showNotification(paste("Bem-vindo,", dados$nome[1]), type = "message")
         
       } else {
-        
         registrar_login(
           siape = siape,
           sucesso = FALSE,
@@ -120,7 +134,6 @@ function(input, output, session) {
       }
       
     } else {
-      
       registrar_login(
         siape = siape,
         sucesso = FALSE,
@@ -146,7 +159,8 @@ function(input, output, session) {
   
   ## ---- Ano de ciclo ----
   anos_disponiveis <- reactive({
-    dbGetQuery(pool_read, "SELECT ano, status FROM anos_ciclo ORDER BY ano DESC")
+    dbGetQuery(pool_read,
+               "SELECT ano, status FROM anos_ciclo ORDER BY ano DESC")
   })
   
   ano_ciclo <- reactive({
@@ -164,19 +178,13 @@ function(input, output, session) {
     req(input$in_ano_ciclo)
     
     if (isTRUE(ano_esta_aberto())) {
-      div(
-        class = "status-ano aberto",
-        "🟢 Ano aberto — edição liberada"
-      )
+      div(class = "status-ano aberto", "🟢 Ano aberto — edição liberada")
     } else {
-      div(
-        class = "status-ano fechado",
-        "🔒 Ano fechado — apenas visualização"
-      )
+      div(class = "status-ano fechado", "🔒 Ano fechado — apenas visualização")
     }
   })
-
-      
+  
+  
   ## Bloqueio visual quando ano fechado ----
   observe({
     req(input$in_ano_ciclo)
@@ -322,23 +330,16 @@ function(input, output, session) {
           br(),
           # selectInput("in_ano_ciclo", "Ano do ciclo:", choices = NULL),
           # uiOutput("out_status_ano"),
-          # 
+          #
           
-          fluidRow(
-            column(
-              3,
-              selectInput("in_ano_ciclo", "Ano do ciclo:", choices = NULL)
-            ),
-            column(
-              9,
-              div(
-                class = "status-ano-wrapper",
-                uiOutput("out_status_ano")
-              )
-            )
-          ),
-
-                    br(),
+          fluidRow(column(
+            3,
+            selectInput("in_ano_ciclo", "Ano do ciclo:", choices = NULL)
+          ), column(
+            9, div(class = "status-ano-wrapper", uiOutput("out_status_ano"))
+          )),
+          
+          br(),
           DTOutput("out_tabela_entregas"),
           br(),
           fluidRow(
@@ -423,7 +424,16 @@ function(input, output, session) {
             "Remover",
             class = "btn-danger",
             icon = icon("trash")
-          )
+          ),
+          # Admin: visualizar auditoria de ações
+          hr(),
+          h4("Histórico de ações administrativas"),
+          p(
+            "Registro das alterações realizadas nos anos de ciclo (abrir, fechar, remover).",
+            class = "texto-explicativo"
+          ),
+          DTOutput("out_tabela_audit_anos")
+          
         ),
         
         tabPanel(
@@ -584,6 +594,28 @@ function(input, output, session) {
     tabela_padrao(dados_anos)
   }, selection = "single")
   
+  output$out_tabela_audit_anos <- renderDT({
+    req(usuario() == "admin")
+    
+    dados <- dbGetQuery(
+      pool_read,
+      "
+    SELECT
+      momento,
+      usuario,
+      acao,
+      referencia AS ano,
+      ip
+    FROM audit_logs
+    WHERE entidade = 'ano_ciclo'
+    ORDER BY momento DESC
+    "
+    )
+    
+    tabela_padrao(dados, selection = "none")
+  })
+  
+  
   
   # --- CRUD anos -----
   observeEvent(input$out_tabela_anos_rows_selected, {
@@ -651,7 +683,11 @@ function(input, output, session) {
       "UPDATE anos_ciclo SET status = $1 WHERE ano = $2",
       params = list(input$in_status_ano, input$in_ano)
     )
-    
+    registrar_auditoria(
+      acao = paste("alterou status para", input$in_status_ano),
+      entidade = "ano_ciclo",
+      referencia = as.character(input$in_ano)
+    )
     showNotification("✏️ Ano atualizado com sucesso!", type = "message")
     
     output$out_tabela_anos <- renderDT({
@@ -666,11 +702,9 @@ function(input, output, session) {
   observeEvent(input$btn_del_ano, {
     req(input$out_tabela_anos_rows_selected)
     
-    qtd <- dbGetQuery(
-      pool_read,
-      "SELECT COUNT(*) FROM entregas WHERE ano = $1",
-      params = list(input$in_ano)
-    )
+    qtd <- dbGetQuery(pool_read,
+                      "SELECT COUNT(*) FROM entregas WHERE ano = $1",
+                      params = list(input$in_ano))
     
     if (qtd[1, 1] > 0) {
       showNotification("❌ Este ano possui entregas registradas.", type = "error")
@@ -687,12 +721,14 @@ function(input, output, session) {
   observeEvent(input$confirm_delete_ano, {
     removeModal()
     
-    dbExecute(
-      pool_write,
-      "DELETE FROM anos_ciclo WHERE ano = $1",
-      params = list(input$in_ano)
+    dbExecute(pool_write,
+              "DELETE FROM anos_ciclo WHERE ano = $1",
+              params = list(input$in_ano))
+    registrar_auditoria(
+      acao = "removeu ano",
+      entidade = "ano_ciclo",
+      referencia = as.character(input$in_ano)
     )
-    
     showNotification("🗑️ Ano removido com sucesso!", type = "message")
     
     output$out_tabela_anos <- renderDT({
@@ -717,8 +753,8 @@ function(input, output, session) {
     # Inserir no banco
     dbExecute(
       pool_write,
-      "INSERT INTO entregas 
-   (data, ano, codigo, entregas, horas, status, servidor) 
+      "INSERT INTO entregas
+   (data, ano, codigo, entregas, horas, status, servidor)
    VALUES ($1, $2, $3, $4, $5, $6, $7)",
       params = list(
         as.character(input$in_data),
@@ -736,7 +772,7 @@ function(input, output, session) {
     dados_entregas(
       dbGetQuery(
         pool_read,
-        "SELECT * FROM entregas 
+        "SELECT * FROM entregas
      WHERE servidor = $1 AND ano = $2
      ORDER BY id DESC",
         params = list(usuario(), ano_ciclo())
@@ -1021,7 +1057,9 @@ function(input, output, session) {
     tabela <- dbGetQuery(pool_read, "SELECT * FROM codigos_entrega")
     id <- tabela$id[sel]
     
-    dbExecute(pool_write, "DELETE FROM codigos_entrega WHERE id=$1", params = list(id))
+    dbExecute(pool_write,
+              "DELETE FROM codigos_entrega WHERE id=$1",
+              params = list(id))
     
     output$out_tabela_codigos <- renderDT({
       dbGetQuery(pool_read, "SELECT * FROM codigos_entrega")
@@ -1264,5 +1302,5 @@ function(input, output, session) {
     }
   })
   
-
+  
 }
