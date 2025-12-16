@@ -1,14 +1,23 @@
 # Changelog – app_entregas
-
-# Changelog
 Todas as alterações relevantes do App Entregas são documentadas aqui.
 
 ---
 ## [Unreleased]
 - Em desenvolvimento
 
+## [2.2.0] - 2025-12-16
+
+### Adicionado
+- Confirmação obrigatória para edição e remoção de anos de ciclo
+- Auditoria administrativa para ações sobre anos (abrir, fechar, remover)
+- Visualização do histórico de auditoria no painel administrativo
+
+### Refatorado
+- Padronização de modais de confirmação via helper genérico
+
 ---
 ## [2.1.1] - 2025-12-16
+
 ### Corrigido
 - Correção crítica no INSERT da tabela `entregas`, passando explicitamente a coluna `ano`
 - Ajuste para compatibilidade com trigger `bloquear_ano_fechado`
@@ -17,6 +26,7 @@ Todas as alterações relevantes do App Entregas são documentadas aqui.
 
 ---
 ## [2.1.0] - 2025-12-15
+
 ### Added
 - Separação de pool de leitura e escrita no banco de dados.
 - Finalização segura das conexões via onStop().
@@ -30,6 +40,7 @@ Todas as alterações relevantes do App Entregas são documentadas aqui.
 
 ---
 ## [2.0.0] – 2025-12-13
+
 ### Added
 - Seletor de ano do ciclo na aba Minhas entregas
 - Bloqueio de edição/inserção/remoção quando ano estiver fechado
@@ -43,22 +54,26 @@ Todas as alterações relevantes do App Entregas são documentadas aqui.
 
 ---
 ## [1.2.0] – 2025-12-12
+
 ### Changed
 - Migração do acesso ao PostgreSQL para pool de conexões
 - Melhoria de estabilidade e gerenciamento de conexões
 
 ---
 ## [1.1.1] – 2025-12-12
+
 ### Changed
 - Exibição da versão do aplicativo no rodapé
 
 ---
 ## [1.1.0] – 2025-12-12
+
 ### Changed
 - Ordenação da tabela de entregas agora é decrescente por padrão
 
 ---
 ## [1.0.0] – 2025-12-12
+
 ### Added
 - Versão inicial funcional do sistema de gestão de entregas
 - Integração com PostgreSQL (Render)
