@@ -11,6 +11,34 @@ source("global.R")
 
 
 function(input, output, session) {
+  # CRIAR O HELPER confirm_action()
+  # 📌 O que isso resolve
+  # Elimina duplicação de modalDialog
+  # Centraliza UX
+  # Facilita mudar texto/cores depois
+  confirm_action <- function(id_confirm,
+                             title = "Confirmação",
+                             message,
+                             label_confirm = "Confirmar",
+                             class_confirm = "btn-danger",
+                             icon_confirm = icon("check")) {
+    showModal(
+      modalDialog(
+        title = title,
+        message,
+        footer = tagList(
+          modalButton("Cancelar"),
+          actionButton(
+            id_confirm,
+            label_confirm,
+            class = class_confirm,
+            icon = icon_confirm
+          )
+        )
+      )
+    )
+  }
+  
 
     usuario      <- reactiveVal(NULL)
   nome_usuario <- reactiveVal(NULL)
@@ -602,21 +630,14 @@ function(input, output, session) {
   observeEvent(input$btn_edit_ano, {
     req(input$out_tabela_anos_rows_selected)
     
-    showModal(
-      modalDialog(
-        title = "Confirmação",
-        paste("Deseja realmente alterar o status do ano", input$in_ano, "?"),
-        footer = tagList(
-          modalButton("Cancelar"),
-          actionButton(
-            "confirm_edit_ano",
-            "Editar",
-            class = "btn-warning",
-            icon = icon("pen-to-square")
-          )
-        )
-      )
+    confirm_action(
+      id_confirm   = "confirm_edit_ano",
+      message      = paste("Deseja realmente alterar o status do ano", input$in_ano, "?"),
+      label_confirm = "Editar",
+      class_confirm = "btn-warning",
+      icon_confirm  = icon("pen-to-square")
     )
+    
   })
   observeEvent(input$confirm_edit_ano, {
     removeModal()
@@ -638,10 +659,6 @@ function(input, output, session) {
     })
   })
   
-  
-  
-  
-  
   # REMOVER ANO (COM SEGURANÇA)
   # Nunca permitir apagar ano que tenha entregas.
   # REMOVER ANO (CONFIRMAÇÃO)
@@ -659,21 +676,12 @@ function(input, output, session) {
       showNotification("❌ Este ano possui entregas registradas.", type = "error")
       return()
     }
-    
-    showModal(
-      modalDialog(
-        title = "Confirmação",
-        paste("Deseja realmente remover o ano", input$in_ano, "?"),
-        footer = tagList(
-          modalButton("Cancelar"),
-          actionButton(
-            "confirm_delete_ano",
-            "Remover",
-            class = "btn-danger",
-            icon = icon("trash")
-          )
-        )
-      )
+    confirm_action(
+      id_confirm   = "confirm_delete_ano",
+      message      = paste("Deseja realmente remover o ano", input$in_ano, "?"),
+      label_confirm = "Remover",
+      class_confirm = "btn-danger",
+      icon_confirm  = icon("trash")
     )
   })
   observeEvent(input$confirm_delete_ano, {
