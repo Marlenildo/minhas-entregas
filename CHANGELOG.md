@@ -7,6 +7,14 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [2.2.5] - 2026-03-16
+
+### Changed
+- Padronização visual do campo de data da aba de entregas para o formato brasileiro `dd/mm/yyyy`.
+- Ajuste do seletor de data para exibir calendário em português e início da semana na segunda-feira.
+- Padronização da data inicial e do reset do formulário conforme o ano de ciclo selecionado, priorizando a data atual quando o ciclo corresponde ao ano corrente.
+
+---
 ## [2.2.4] - 2026-03-16
 
 ### Changed
