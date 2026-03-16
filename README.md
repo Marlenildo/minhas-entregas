@@ -1,21 +1,49 @@
 # App Entregas
 
-Aplicacao Shiny para registro, consulta e administracao de entregas por servidor, com controle por ciclo anual, autenticacao por SIAPE, relatorios agregados e painel administrativo.
+Aplicação Shiny para registro, acompanhamento e administração de entregas por servidor, com autenticação por SIAPE, controle por ciclo anual, relatórios filtráveis e painel administrativo.
 
-## Visao geral
+## Apresentação
 
-O App Entregas foi desenvolvido para organizar o lancamento e o acompanhamento de entregas realizadas por usuarios autenticados. O sistema permite registrar atividades, consolidar relatorios e administrar a base de apoio do aplicativo.
+O **App Entregas** foi desenvolvido para apoiar o controle operacional de atividades entregues por usuários autenticados, permitindo registrar lançamentos, consolidar informações, administrar dados auxiliares e acompanhar resultados por meio de relatórios.
+
+O sistema foi pensado para um contexto institucional, com separação entre perfis de usuário comum e administrador, regras de controle por ano de ciclo e integração com banco de dados PostgreSQL.
 
 ## Principais funcionalidades
 
-- Login por SIAPE e senha.
-- Registro, edicao e exclusao de entregas pelo proprio usuario.
-- Controle de ciclo anual com anos abertos e fechados.
-- Relatorios com filtros por ano, mes, servidor e codigo.
-- Exportacao das tabelas via DataTables.
-- Painel administrativo para gerenciar anos, codigos e servidores.
-- Auditoria de acoes administrativas sobre anos de ciclo.
-- Separacao entre conexoes de leitura e escrita no PostgreSQL.
+- Autenticação por SIAPE e senha.
+- Registro, edição e exclusão de entregas pelo próprio usuário.
+- Controle de ano de ciclo com status aberto ou fechado.
+- Restrição de edição em anos fechados.
+- Relatórios com filtros por ano, mês, servidor e código.
+- Exportação de tabelas em formatos suportados pelo DataTables.
+- Painel administrativo para gerenciar anos, códigos e servidores.
+- Auditoria de ações administrativas sobre anos de ciclo.
+- Uso de pools de conexão separados para leitura e escrita no PostgreSQL.
+
+## Perfis de acesso
+
+### Usuário comum
+
+- Consulta as próprias entregas.
+- Registra, atualiza e remove lançamentos quando o ano estiver aberto.
+- Visualiza relatórios restritos aos próprios dados.
+
+### Administrador
+
+- Visualiza todos os registros do sistema.
+- Gerencia anos de ciclo, códigos e servidores.
+- Acompanha o histórico de auditoria das ações administrativas.
+- Consulta relatórios consolidados do ambiente.
+
+## Estrutura principal do projeto
+
+- `ui.R`: define a interface da aplicação.
+- `server.R`: concentra as regras de negócio, autenticação, CRUD e relatórios.
+- `global.R`: carrega a versão do aplicativo e configura os pools de conexão.
+- `www/`: contém os arquivos estáticos da interface, como CSS e imagens.
+- `VERSION`: armazena a versão atual da aplicação.
+- `CHANGELOG.md`: registra o histórico de alterações por versão.
+- `RUNBOOK.md`: reúne procedimentos operacionais, implantação e suporte.
 
 ## Tecnologias utilizadas
 
@@ -29,23 +57,16 @@ O App Entregas foi desenvolvido para organizar o lancamento e o acompanhamento d
 - bcrypt
 - PostgreSQL
 
-## Estrutura principal
+## Requisitos
 
-- `ui.R`: interface da aplicacao.
-- `server.R`: regras de negocio, CRUD, login e relatorios.
-- `global.R`: versao do app e pools de conexao com o banco.
-- `www/estilo.css`: estilos da interface.
-- `VERSION`: versao atual.
-- `CHANGELOG.md`: historico de alteracoes.
+- R instalado no ambiente.
+- Pacotes R exigidos pelo projeto.
+- Acesso a uma instância PostgreSQL compatível com a configuração do app.
+- Variáveis de ambiente configuradas com as credenciais do banco.
 
-## Perfis de uso
+## Configuração de ambiente
 
-- Usuario comum: registra e consulta as proprias entregas.
-- Administrador: visualiza todos os dados e gerencia anos, codigos, servidores e auditoria.
-
-## Configuracao de ambiente
-
-O app espera as seguintes variaveis de ambiente:
+O aplicativo utiliza as seguintes variáveis de ambiente:
 
 - `DB_NAME`
 - `DB_HOST`
@@ -56,38 +77,48 @@ O app espera as seguintes variaveis de ambiente:
 - `DB_USER_READ`
 - `DB_PASSWORD_READ`
 
-Essas credenciais nao devem ser versionadas no repositorio. O uso recomendado e um arquivo `.Renviron` local.
+Recomenda-se manter essas informações em um arquivo `.Renviron` local, fora do versionamento.
 
-## Como executar localmente
+## Execução local
 
-1. Instale as dependencias do app no R.
-2. Configure as variaveis de ambiente do banco.
-3. No diretorio do projeto, execute:
+No diretório do aplicativo, execute:
 
 ```r
 shiny::runApp()
 ```
 
-Se preferir pelo terminal:
+Ou, pelo terminal:
 
 ```powershell
-Rscript -e "shiny::runApp('caminho/do/app_entregas')"
+Rscript -e "shiny::runApp('.')"
 ```
 
 ## Banco de dados
 
-O aplicativo usa PostgreSQL com pools separados para leitura e escrita. Isso melhora a organizacao das credenciais e ajuda na estabilidade das conexoes.
+O App Entregas utiliza PostgreSQL com separação entre conexão de leitura e conexão de escrita. Essa abordagem contribui para melhor organização das permissões e maior previsibilidade na comunicação com o banco.
 
-## Direitos autorais e licenciamento
+## Documentação operacional
 
-Este projeto nao e open source.
+As instruções operacionais, de manutenção e de suporte foram separadas em `RUNBOOK.md`, para manter este `README.md` mais objetivo e facilitar a consulta do dia a dia.
 
-O codigo e os demais arquivos do repositorio pertencem ao autor e estao protegidos por copyright, com todos os direitos reservados. Consulte o arquivo `LICENSE` para os termos completos.
+## Licenciamento e direitos autorais
+
+Este projeto **não é software livre** e **não é open source**.
+
+O código-fonte, os ativos visuais, os arquivos de configuração, a documentação e os demais conteúdos deste repositório pertencem ao autor e estão protegidos por copyright, com **todos os direitos reservados**.
+
+Consulte o arquivo `LICENSE` para os termos completos de uso e restrição.
+
+## Idioma da documentação
+
+Este repositório adota o **português do Brasil** como idioma principal da documentação, por ser o idioma mais adequado ao contexto do projeto, do autor e do uso esperado da aplicação.
+
+Caso futuramente haja necessidade de ampliar o alcance público do repositório, pode ser incluída uma versão complementar em inglês, sem substituir a documentação principal em português.
 
 ## Autor
 
-Marlenildo Melo
+**Marlenildo Melo**
 
-## Observacao
+## Observação importante
 
-Se este repositorio estiver publicado no GitHub, isso nao significa concessao de permissao para uso, redistribuicao ou modificacao fora das condicoes expressamente autorizadas pelo autor.
+A publicação deste repositório em plataforma pública ou privada não implica concessão automática de licença de uso, redistribuição, modificação ou exploração do software.
