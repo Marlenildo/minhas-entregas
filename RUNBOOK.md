@@ -13,12 +13,16 @@ Fornecer um guia prático para:
 - diagnóstico inicial de falhas;
 - alinhamento entre documentação, versão e entrega em produção.
 
-## Nomenclatura adotada
+## Nome oficial do sistema
 
-- **Minhas Entregas**: nome oficial do sistema.
-- `app_entregas`: identificador técnico do repositório e de partes legadas da implantação.
+O nome oficial do sistema é **Minhas Entregas** e deve ser priorizado em:
 
-Ao atualizar interfaces, documentação ou materiais de apoio, deve-se priorizar o nome **Minhas Entregas**.
+- interface visível do aplicativo;
+- documentação funcional;
+- comunicação com usuários;
+- materiais institucionais e operacionais.
+
+Identificadores legados de infraestrutura podem ser mantidos apenas quando houver motivo técnico, como preservação de link público já conhecido pelos usuários.
 
 ## Pré-requisitos
 
@@ -121,7 +125,7 @@ Ao preparar uma nova versão:
 - Evitar arquivos duplicados desnecessários no diretório `www/`.
 - Registrar mudanças funcionais relevantes no `CHANGELOG.md`.
 - Manter a documentação alinhada com a versão publicada.
-- Tratar `Minhas Entregas` como nome padrão de apresentação do sistema.
+- Tratar **Minhas Entregas** como nome padrão de apresentação do sistema.
 
 ## Governança
 

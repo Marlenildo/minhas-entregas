@@ -19,7 +19,7 @@ fluidPage(
   div(
     class = "top-panel",
     style = "justify-content: center;",
-    img(src = "logo_app_entregas.png"),
+    img(src = "logo_minhas_entregas.png"),
     span("Minhas Entregas")
   ),
   
@@ -50,7 +50,7 @@ fluidPage(
     div(
       class = "footer-version",
       paste0(
-        "Desenvolvido por Marlenildo Melo © 2025 | Minhas Entregas • Versão ",
+        "Minhas Entregas © 2025-2026 Marlenildo Melo | Todos os direitos reservados | Licença proprietária | Versão ",
         APP_VERSION
       )
     )

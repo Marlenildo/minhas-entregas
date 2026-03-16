@@ -4,9 +4,9 @@ Aplicação Shiny para registro, acompanhamento e administração de entregas po
 
 ## Apresentação
 
-**Minhas Entregas** é o nome oficial do produto. Trata-se de uma aplicação desenvolvida para apoiar o controle operacional de atividades entregues por usuários autenticados, permitindo registrar lançamentos, consolidar informações, administrar dados auxiliares e acompanhar resultados por meio de relatórios.
+**Minhas Entregas** é o nome oficial do produto e deve ser utilizado como referência principal em interface, documentação, materiais de apoio e comunicação com usuários.
 
-No contexto técnico deste repositório, alguns arquivos e identificadores internos ainda podem utilizar o nome `app_entregas`, que corresponde ao identificador do projeto no código e em parte da infraestrutura. Sempre que houver diferença entre o nome técnico e o nome do produto, deve prevalecer, para fins de comunicação e apresentação, o nome **Minhas Entregas**.
+Trata-se de uma aplicação desenvolvida para apoiar o controle operacional de atividades entregues por usuários autenticados, permitindo registrar lançamentos, consolidar informações, administrar dados auxiliares e acompanhar resultados por meio de relatórios.
 
 ## Objetivo do sistema
 
@@ -56,7 +56,7 @@ Seu objetivo é oferecer uma base confiável para:
 - `VERSION`: armazena a versão atual da aplicação.
 - `CHANGELOG.md`: registra o histórico de alterações por versão.
 - `RUNBOOK.md`: reúne procedimentos operacionais, implantação e suporte.
-- `LICENSE`: descreve o regime de proteção jurídica e direitos autorais do projeto.
+- `LICENSE`: descreve o regime de proteção jurídica e os direitos autorais do projeto.
 
 ## Tecnologias utilizadas
 
@@ -74,7 +74,7 @@ Seu objetivo é oferecer uma base confiável para:
 
 - R instalado no ambiente.
 - Pacotes R exigidos pelo projeto.
-- Acesso a uma instância PostgreSQL compatível com a configuração do app.
+- Acesso a uma instância PostgreSQL compatível com a configuração do sistema.
 - Variáveis de ambiente configuradas com as credenciais do banco.
 
 ## Configuração de ambiente
@@ -114,14 +114,11 @@ O Minhas Entregas utiliza PostgreSQL com separação entre conexão de leitura e
 
 As instruções operacionais, de manutenção, validação e suporte foram separadas em `RUNBOOK.md`, para manter este `README.md` mais objetivo e facilitar a consulta no dia a dia.
 
-## Convenção de nomenclatura
+## Identidade do produto
 
-Este projeto adota a seguinte convenção:
+O nome oficial do sistema é **Minhas Entregas**.
 
-- **Minhas Entregas**: nome funcional, institucional e de apresentação do sistema.
-- `app_entregas`: identificador técnico do repositório, de arquivos legados e de alguns metadados de implantação.
-
-Sempre que novos materiais forem produzidos, a recomendação é priorizar o nome **Minhas Entregas** em interfaces, documentação e comunicação externa.
+Quando existir algum identificador legado em infraestrutura, rotas ou serviços externos, ele deve ser tratado apenas como detalhe técnico de compatibilidade, sem substituir o nome institucional do produto.
 
 ## Licenciamento e direitos autorais
 
