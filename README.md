@@ -1,12 +1,24 @@
-# App Entregas
+# Minhas Entregas
 
 Aplicação Shiny para registro, acompanhamento e administração de entregas por servidor, com autenticação por SIAPE, controle por ciclo anual, relatórios filtráveis e painel administrativo.
 
 ## Apresentação
 
-O **App Entregas** foi desenvolvido para apoiar o controle operacional de atividades entregues por usuários autenticados, permitindo registrar lançamentos, consolidar informações, administrar dados auxiliares e acompanhar resultados por meio de relatórios.
+**Minhas Entregas** é o nome oficial do produto. Trata-se de uma aplicação desenvolvida para apoiar o controle operacional de atividades entregues por usuários autenticados, permitindo registrar lançamentos, consolidar informações, administrar dados auxiliares e acompanhar resultados por meio de relatórios.
+
+No contexto técnico deste repositório, alguns arquivos e identificadores internos ainda podem utilizar o nome `app_entregas`, que corresponde ao identificador do projeto no código e em parte da infraestrutura. Sempre que houver diferença entre o nome técnico e o nome do produto, deve prevalecer, para fins de comunicação e apresentação, o nome **Minhas Entregas**.
+
+## Objetivo do sistema
 
 O sistema foi pensado para um contexto institucional, com separação entre perfis de usuário comum e administrador, regras de controle por ano de ciclo e integração com banco de dados PostgreSQL.
+
+Seu objetivo é oferecer uma base confiável para:
+
+- registrar entregas realizadas por servidor;
+- consultar históricos individuais ou consolidados;
+- administrar dados auxiliares do ambiente;
+- acompanhar resultados com filtros e relatórios;
+- aplicar regras de governança por ciclo anual.
 
 ## Principais funcionalidades
 
@@ -44,6 +56,7 @@ O sistema foi pensado para um contexto institucional, com separação entre perf
 - `VERSION`: armazena a versão atual da aplicação.
 - `CHANGELOG.md`: registra o histórico de alterações por versão.
 - `RUNBOOK.md`: reúne procedimentos operacionais, implantação e suporte.
+- `LICENSE`: descreve o regime de proteção jurídica e direitos autorais do projeto.
 
 ## Tecnologias utilizadas
 
@@ -95,11 +108,20 @@ Rscript -e "shiny::runApp('.')"
 
 ## Banco de dados
 
-O App Entregas utiliza PostgreSQL com separação entre conexão de leitura e conexão de escrita. Essa abordagem contribui para melhor organização das permissões e maior previsibilidade na comunicação com o banco.
+O Minhas Entregas utiliza PostgreSQL com separação entre conexão de leitura e conexão de escrita. Essa abordagem contribui para melhor organização das permissões e maior previsibilidade na comunicação com o banco.
 
 ## Documentação operacional
 
-As instruções operacionais, de manutenção e de suporte foram separadas em `RUNBOOK.md`, para manter este `README.md` mais objetivo e facilitar a consulta do dia a dia.
+As instruções operacionais, de manutenção, validação e suporte foram separadas em `RUNBOOK.md`, para manter este `README.md` mais objetivo e facilitar a consulta no dia a dia.
+
+## Convenção de nomenclatura
+
+Este projeto adota a seguinte convenção:
+
+- **Minhas Entregas**: nome funcional, institucional e de apresentação do sistema.
+- `app_entregas`: identificador técnico do repositório, de arquivos legados e de alguns metadados de implantação.
+
+Sempre que novos materiais forem produzidos, a recomendação é priorizar o nome **Minhas Entregas** em interfaces, documentação e comunicação externa.
 
 ## Licenciamento e direitos autorais
 
@@ -113,7 +135,7 @@ Consulte o arquivo `LICENSE` para os termos completos de uso e restrição.
 
 Este repositório adota o **português do Brasil** como idioma principal da documentação, por ser o idioma mais adequado ao contexto do projeto, do autor e do uso esperado da aplicação.
 
-Caso futuramente haja necessidade de ampliar o alcance público do repositório, pode ser incluída uma versão complementar em inglês, sem substituir a documentação principal em português.
+Se, no futuro, houver interesse em ampliar o alcance público do projeto, pode ser criada uma versão complementar em inglês, sem substituir a documentação principal em português.
 
 ## Autor
 

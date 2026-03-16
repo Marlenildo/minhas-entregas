@@ -20,7 +20,7 @@ fluidPage(
     class = "top-panel",
     style = "justify-content: center;",
     img(src = "logo_app_entregas.png"),
-    span("App Entregas")
+    span("Minhas Entregas")
   ),
   
   ## Login----
@@ -50,7 +50,7 @@ fluidPage(
     div(
       class = "footer-version",
       paste0(
-        "Desenvolvido por Marlenildo Melo © 2025 | App Entregas • Versão ",
+        "Desenvolvido por Marlenildo Melo © 2025 | Minhas Entregas • Versão ",
         APP_VERSION
       )
     )
