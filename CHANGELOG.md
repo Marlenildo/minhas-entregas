@@ -6,6 +6,13 @@ Todas as alterações relevantes do App Entregas são documentadas aqui.
 - Em desenvolvimento
 
 ---
+## [2.2.2] - 2026-03-16
+
+### Fixed
+- Atualização reativa do relatório após adicionar, editar ou remover entregas.
+- Sincronização dos filtros e das tabelas derivadas com as alterações feitas em `entregas` na mesma sessão.
+
+---
 ## [2.2.1] - 2025-12-16
 
 ### Added
