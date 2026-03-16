@@ -7,6 +7,14 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [2.2.4] - 2026-03-16
+
+### Changed
+- Refinamento institucional do rodapé da interface, com referência explícita a direitos reservados, licença proprietária e versão do sistema.
+- Consolidação do nome **Minhas Entregas** como referência pública principal do produto na documentação.
+- Ajuste do `README.md` e do `RUNBOOK.md` para reduzir o uso de nomenclaturas técnicas legadas fora de contexto operacional.
+
+---
 ## [2.2.3] - 2026-03-16
 
 ### Changed
