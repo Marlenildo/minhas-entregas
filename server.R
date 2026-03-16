@@ -156,6 +156,11 @@ function(input, output, session) {
   dados_entregas   <- reactiveVal(data.frame())
   dados_servidores <- reactiveVal(data.frame())
   dados_codigos    <- reactiveVal(data.frame())
+  entregas_refresh <- reactiveVal(0L)
+  
+  marcar_entregas_atualizadas <- function() {
+    entregas_refresh(isolate(entregas_refresh()) + 1L)
+  }
   
   ## ---- Ano de ciclo ----
   anos_disponiveis <- reactive({
@@ -245,6 +250,7 @@ function(input, output, session) {
   
   observe({
     req(usuario(), anos_disponiveis())
+    entregas_refresh()
     
     if (usuario() == "admin") {
       todos_dados <- dbGetQuery(pool_read, "SELECT * FROM entregas")
@@ -579,6 +585,7 @@ function(input, output, session) {
   })
   
   output$out_tabela_todos <- renderDT({
+    entregas_refresh()
     dados_todos <- dbGetQuery(pool_read, "SELECT * FROM entregas")
     tabela_padrao(dados_todos)
   })
@@ -789,6 +796,8 @@ function(input, output, session) {
       tabela_padrao(dados_entregas(), selection = "single")
     })
     
+    marcar_entregas_atualizadas()
+    
     #### Limpar inputs---
     updateDateInput(session, "in_data", value = Sys.Date())
     updateSelectInput(session, "in_codigo", selected = codigos_validos()[1])
@@ -865,6 +874,8 @@ function(input, output, session) {
       tabela_padrao(dados_entregas(), selection = "single")
     })
     
+    marcar_entregas_atualizadas()
+    
     showNotification("✏️ Entrega atualizada com sucesso!", type = "message")
   })
   
@@ -935,6 +946,8 @@ function(input, output, session) {
     output$out_tabela_entregas <- renderDT({
       tabela_padrao(dados_entregas(), selection = "single")
     })
+    
+    marcar_entregas_atualizadas()
     
     # Limpar inputs
     updateDateInput(session, "in_data", value = Sys.Date())
@@ -1229,6 +1242,7 @@ function(input, output, session) {
   # --- Relatório ----
   output$out_tabela_relatorio <- renderDT({
     req(usuario())
+    entregas_refresh()
     
     # Dados brutos: admin vê todos, servidor vê apenas os seus
     if (usuario() == "admin") {

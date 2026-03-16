@@ -6,6 +6,7 @@
 # Shiny
 rsconnect/
 *.log
+www/* - Copia.*
 
 
 # Ambiente / segredos
