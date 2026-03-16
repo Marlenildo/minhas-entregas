@@ -1,10 +1,18 @@
-# Changelog - app_entregas
+# Changelog - Minhas Entregas
 
-Todas as alterações relevantes do App Entregas são documentadas aqui.
+Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 
 ---
 ## [Unreleased]
 - Em desenvolvimento.
+
+---
+## [2.2.3] - 2026-03-16
+
+### Changed
+- Padronização do nome do produto para **Minhas Entregas** na documentação principal e na interface visível do aplicativo.
+- Refinamento do `README.md` para refletir o nome oficial do sistema e separar melhor a documentação institucional da operacional.
+- Atualização do `RUNBOOK.md` e da `LICENSE` para manter alinhamento com a identidade do produto.
 
 ---
 ## [2.2.2] - 2026-03-16
