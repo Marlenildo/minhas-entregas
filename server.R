@@ -178,6 +178,16 @@ function(input, output, session) {
     dados$status[dados$ano == ano_ciclo()] == "aberto"
   })
   
+  data_padrao_ciclo <- function(ano) {
+    hoje <- Sys.Date()
+    
+    if (format(hoje, "%Y") == as.character(ano)) {
+      hoje
+    } else {
+      as.Date(paste0(ano, "-01-01"))
+    }
+  }
+  
   
   output$out_status_ano <- renderUI({
     req(input$in_ano_ciclo)
@@ -212,18 +222,11 @@ function(input, output, session) {
     req(input$in_ano_ciclo)
     
     ano <- ano_ciclo()
-    hoje <- Sys.Date()
-    
-    data_padrao <- if (format(hoje, "%Y") == as.character(ano)) {
-      hoje
-    } else {
-      as.Date(paste0(ano, "-01-01"))
-    }
     
     updateDateInput(
       session,
       "in_data",
-      value = data_padrao,
+      value = data_padrao_ciclo(ano),
       min   = as.Date(paste0(ano, "-01-01")),
       max   = as.Date(paste0(ano, "-12-31"))
     )
@@ -353,7 +356,17 @@ function(input, output, session) {
           DTOutput("out_tabela_entregas"),
           br(),
           fluidRow(
-            column(2, dateInput("in_data", "Data")),
+            column(
+              2,
+              dateInput(
+                "in_data",
+                "Data",
+                value = Sys.Date(),
+                format = "dd/mm/yyyy",
+                language = "pt-BR",
+                weekstart = 1
+              )
+            ),
             column(
               4,
               selectInput(
@@ -799,7 +812,7 @@ function(input, output, session) {
     marcar_entregas_atualizadas()
     
     #### Limpar inputs---
-    updateDateInput(session, "in_data", value = Sys.Date())
+    updateDateInput(session, "in_data", value = data_padrao_ciclo(ano_ciclo()))
     updateSelectInput(session, "in_codigo", selected = codigos_validos()[1])
     updateNumericInput(session, "in_entregas", value = 0)
     updateNumericInput(session, "in_horas", value = 0)
@@ -950,7 +963,7 @@ function(input, output, session) {
     marcar_entregas_atualizadas()
     
     # Limpar inputs
-    updateDateInput(session, "in_data", value = Sys.Date())
+    updateDateInput(session, "in_data", value = data_padrao_ciclo(ano_ciclo()))
     updateSelectInput(session, "in_codigo", selected = codigos_validos()[1])
     updateNumericInput(session, "in_entregas", value = 0)
     updateNumericInput(session, "in_horas", value = 0)
