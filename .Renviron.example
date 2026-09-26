@@ -1,0 +1,33 @@
+# Modelo de configuração do Minhas Entregas.
+#
+# Copie este arquivo para `.Renviron` no diretório do projeto e substitua os
+# valores de exemplo pelos do seu ambiente. O `.Renviron` real é ignorado pelo
+# git e nunca deve ser versionado nem compartilhado.
+#
+#   file.copy(".Renviron.example", ".Renviron")
+#
+# O R lê o arquivo ao iniciar a sessão: reinicie o R depois de alterá-lo.
+# Uma linha por variável, sem espaços ao redor do `=` e sem aspas.
+#
+# Na publicação em nuvem, as mesmas variáveis são cadastradas nas configurações
+# do conteúdo, dentro da plataforma, e não neste arquivo.
+
+# --- Conexão com o PostgreSQL ---------------------------------------------
+# Host, porta e nome do banco saem da string de conexão do provedor, no formato
+# postgresql://USUARIO:SENHA@HOST:PORTA/BANCO?sslmode=require
+DB_NAME=nome_do_banco
+DB_HOST=host.do.provedor
+DB_PORT=5432
+
+# Modo de SSL exigido pelo provedor. No Neon, use require.
+PGSSLMODE=require
+
+# --- Usuário de leitura ----------------------------------------------------
+# Usado nas consultas do aplicativo. Precisa apenas de SELECT nas tabelas.
+DB_USER_READ=usuario_de_leitura
+DB_PASSWORD_READ=senha_do_usuario_de_leitura
+
+# --- Usuário de escrita ----------------------------------------------------
+# Usado ao inserir, editar e remover registros.
+DB_USER_WRITE=usuario_de_escrita
+DB_PASSWORD_WRITE=senha_do_usuario_de_escrita

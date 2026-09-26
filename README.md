@@ -68,6 +68,7 @@ endereço de rede, informações de navegador ou qualquer outro dado pessoal. A 
 - `scripts/limpar_registros_de_rede.R`: manutenção pontual, descrita no `RUNBOOK.md`.
 - `VERSION`: armazena a versão atual da aplicação.
 - `manifest.json`: descreve o ambiente R para publicação no Posit Connect Cloud.
+- `.Renviron.example`: modelo das variáveis de ambiente, sem valores reais.
 - `CHANGELOG.md`: registra o histórico de alterações por versão.
 - `RUNBOOK.md`: reúne procedimentos operacionais, implantação e suporte.
 - `LICENSE`: descreve o regime de proteção jurídica e os direitos autorais do projeto.
@@ -104,8 +105,14 @@ O aplicativo utiliza as seguintes variáveis de ambiente:
 - `DB_USER_READ`
 - `DB_PASSWORD_READ`
 
-Recomenda-se manter essas informações em um arquivo `.Renviron` local, fora do versionamento
-(o `.gitignore` já ignora `.Renviron` e `.env`).
+O repositório traz um modelo em `.Renviron.example`. Copie-o e preencha com os valores do seu ambiente:
+
+```r
+file.copy(".Renviron.example", ".Renviron")
+```
+
+O `.Renviron` real fica fora do versionamento (o `.gitignore` já ignora `.Renviron` e `.env`). O R lê o
+arquivo ao iniciar a sessão, então reinicie o R depois de alterá-lo.
 
 Na publicação, as mesmas variáveis são cadastradas nas configurações do conteúdo dentro da plataforma,
 nunca no repositório. O `RUNBOOK.md` detalha o conteúdo de cada variável e onde encontrar os valores
