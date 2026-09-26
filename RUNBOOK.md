@@ -29,7 +29,7 @@ Identificadores legados de infraestrutura podem ser mantidos apenas quando houve
 - R instalado no ambiente.
 - Dependências R do projeto instaladas.
 - Credenciais válidas de acesso ao banco PostgreSQL.
-- Arquivo `.Renviron` local configurado (ver "Variáveis de ambiente").
+- Arquivo `.Renviron` local configurado a partir do `.Renviron.example` (ver "Variáveis de ambiente").
 
 ## Inicialização local
 
@@ -133,7 +133,8 @@ O aplicativo lê oito variáveis, todas em `global.R`:
 Onde encontrar os valores em uso:
 
 - No ambiente de desenvolvimento, eles estão no `.Renviron` (do projeto ou do usuário). Para abrir o
-  arquivo: `usethis::edit_r_environ()`, ou `file.edit("~/.Renviron")`.
+  arquivo: `usethis::edit_r_environ()`, ou `file.edit("~/.Renviron")`. Em uma máquina nova, parta do
+  modelo versionado: `file.copy(".Renviron.example", ".Renviron")`.
 - Para conferir sem expor senhas, liste apenas os nomes preenchidos:
 
   ```r
@@ -146,7 +147,8 @@ Onde encontrar os valores em uso:
   `postgresql://USUARIO:SENHA@HOST:PORTA/BANCO?sslmode=require`, de onde saem host, porta, banco,
   usuário e senha. Os usuários de leitura e de escrita são cadastrados separadamente no banco.
 
-Nunca versione esses valores. O `.gitignore` já ignora `.Renviron` e `.env`.
+Nunca versione esses valores. O `.gitignore` já ignora `.Renviron` e `.env`; apenas o
+`.Renviron.example`, com valores de exemplo, fica no repositório.
 
 ## Publicação no Posit Connect Cloud
 

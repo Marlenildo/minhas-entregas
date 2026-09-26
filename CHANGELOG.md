@@ -6,6 +6,7 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 ## [Unreleased]
 
 ### Added
+- `.Renviron.example`: modelo das variáveis de ambiente, com valores de exemplo e comentários sobre a origem de cada uma. O `.Renviron` real continua fora do versionamento.
 - `scripts/limpar_registros_de_rede.R`: apaga o IP e o navegador gravados por versões anteriores à 3.0.2 em `login_logs` e `audit_logs`, preservando os registros de acesso e de auditoria. O script não faz parte do pacote publicado e não altera a versão do aplicativo.
 
 ---
