@@ -152,6 +152,11 @@ Observações:
   publicação falhar ao instalar alguma dependência, regenere o manifesto na máquina de desenvolvimento
   com `rsconnect::writeManifest()` e publique novamente.
 - O ambiente de publicação precisa usar UTF-8, pois rótulos e cabeçalhos da interface têm acentos.
+- **`bcrypt` deve permanecer na versão 1.2.0 no manifesto.** A versão 1.2.1 exige `openssl` 2.3.5 ou
+  superior, e o Connect Cloud fornece `openssl` 2.1.1: com 1.2.1 a instalação falha e a publicação é
+  abortada. Ao regenerar o manifesto numa máquina que tenha o `bcrypt` 1.2.1 instalado, confira a
+  entrada do pacote antes de publicar. O formato dos hashes é o mesmo nas duas versões, então as senhas
+  já cadastradas continuam válidas.
 
 ## Verificações operacionais úteis
 

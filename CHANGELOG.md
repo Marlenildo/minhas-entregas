@@ -4,6 +4,13 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 
 ---
 ## [Unreleased]
+- Em desenvolvimento.
+
+---
+## [3.0.3] - 2026-09-26
+
+### Fixed
+- Publicação no Posit Connect Cloud: o `manifest.json` passa a fixar `bcrypt` 1.2.0. A versão 1.2.1 exige `openssl` 2.3.5 ou superior, enquanto o ambiente da plataforma fornece `openssl` 2.1.1, o que fazia a instalação do pacote falhar e abortar a publicação. O formato dos hashes de senha é o mesmo nas duas versões, então as senhas já cadastradas continuam válidas.
 
 ### Added
 - Documentação das variáveis de ambiente no `RUNBOOK.md`: conteúdo de cada uma, onde encontrar os valores em uso e como cadastrá-las na plataforma de publicação.
