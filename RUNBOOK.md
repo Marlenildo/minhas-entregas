@@ -92,12 +92,24 @@ Das ações administrativas sobre anos de ciclo ficam registrados o usuário, a 
 A partir da versão 3.0.2 o aplicativo **não grava mais endereço IP nem informações do navegador**.
 
 As colunas `ip` e `user_agent` continuam existindo nas duas tabelas por compatibilidade, porém deixam de
-ser preenchidas. Os valores gravados por versões anteriores permanecem no banco. Para eliminá-los,
-o responsável pelo banco pode executar, fora do aplicativo:
+ser preenchidas. Os valores gravados por versões anteriores permanecem no banco até serem eliminados.
+
+Para eliminá-los, com o `.Renviron` configurado, execute no diretório do projeto:
+
+```r
+source("scripts/limpar_registros_de_rede.R")
+```
+
+O script conta quantos registros têm IP ou navegador, pede confirmação quando executado de forma
+interativa e aplica a limpeza em uma única transação. Os registros de acesso e de auditoria são
+preservados: apenas essas duas colunas ficam nulas. Executá-lo mais de uma vez não causa efeito
+adicional.
+
+Equivalente em SQL, caso prefira rodar direto no banco:
 
 ```sql
-UPDATE login_logs SET ip = NULL, user_agent = NULL;
-UPDATE audit_logs SET ip = NULL, user_agent = NULL;
+UPDATE login_logs SET ip = NULL, user_agent = NULL WHERE ip IS NOT NULL OR user_agent IS NOT NULL;
+UPDATE audit_logs SET ip = NULL, user_agent = NULL WHERE ip IS NOT NULL OR user_agent IS NOT NULL;
 ```
 
 Se, no futuro, as colunas não forem mais necessárias, elas podem ser removidas do esquema em uma
