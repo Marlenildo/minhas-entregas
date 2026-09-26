@@ -4,7 +4,27 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 
 ---
 ## [Unreleased]
-- Em desenvolvimento.
+
+### Added
+- Nova identidade visual alinhada ao Croma: paleta azul institucional/verde, painéis, abas, indicadores, tabelas e janelas de confirmação padronizados (`www/css/app.css`).
+- Nova logo do Minhas Entregas e favicon, gerados por `scripts/gerar_logo_app.R` (anel de esforço por atividade, marcações de horas e sinal de entrega concluída).
+- Tela de acesso dedicada: após o login ela é ocultada e o app mostra o nome do servidor e o botão **Sair**.
+- Painel **Esforço do mês** na aba de entregas: horas, entregas, atividades e distribuição percentual das horas por atividade no mês escolhido.
+- Indicadores resumidos nos relatórios e na visão administrativa de todas as entregas, com o nome do servidor.
+- Coluna "Senha configurada" na administração de servidores (a senha em hash deixa de ser exibida).
+
+### Changed
+- Formulário de lançamentos com modo "Novo lançamento" e "Editando", botões habilitados conforme a seleção e a situação do ano do ciclo.
+- Relatórios com rótulos em português, nomes dos meses e percentuais com vírgula decimal.
+- Ao criar ou abrir um ano de ciclo, os demais são fechados na mesma transação; a criação de ano passa a ser auditada.
+- `global.R` deixa de ser carregado mais de uma vez (menos conexões abertas com o banco).
+
+### Security
+- Todas as saídas e ações administrativas passam a exigir o perfil de administrador no servidor, não apenas na interface.
+- Validação no servidor de data, atividade, horas, entregas e situação antes de gravar.
+- Limite de 5 tentativas de login sem sucesso por sessão, com espera de 1 minuto.
+- SIAPE e senha são enviados juntos no login, evitando falhas ao colar a senha e apertar Enter.
+- Edição e remoção usam o registro confirmado na janela de confirmação, e não a seleção atual da tabela.
 
 ---
 ## [2.2.5] - 2026-03-16

@@ -52,7 +52,9 @@ Seu objetivo é oferecer uma base confiável para:
 - `ui.R`: define a interface da aplicação.
 - `server.R`: concentra as regras de negócio, autenticação, CRUD e relatórios.
 - `global.R`: carrega a versão do aplicativo e configura os pools de conexão.
-- `www/`: contém os arquivos estáticos da interface, como CSS e imagens.
+- `www/css/app.css`: estilos da interface, na mesma identidade visual do Croma.
+- `www/img/`: logo do aplicativo, favicon e logo do rodapé.
+- `scripts/gerar_logo_app.R`: gera a logo e o favicon a partir de cores CIELCH (`Rscript scripts/gerar_logo_app.R`).
 - `VERSION`: armazena a versão atual da aplicação.
 - `CHANGELOG.md`: registra o histórico de alterações por versão.
 - `RUNBOOK.md`: reúne procedimentos operacionais, implantação e suporte.
