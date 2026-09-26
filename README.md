@@ -23,7 +23,7 @@ Seu objetivo é oferecer uma base confiável para:
 ## Principais funcionalidades
 
 - Autenticação por SIAPE e senha.
-- Registro, edição e exclusão de entregas pelo próprio usuário.
+- Registro, edição e exclusão de entregas pelo próprio usuário, em cartões com ação direta e confirmação.
 - Controle de ano de ciclo com status aberto ou fechado.
 - Restrição de edição em anos fechados.
 - Relatórios com filtros por ano, mês, servidor e código.

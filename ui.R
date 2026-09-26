@@ -9,6 +9,24 @@ fluidPage(
     tags$meta(name = "author", content = "Marlenildo Melo"),
     tags$meta(name = "description", content = "Minhas Entregas: registro de entregas e cálculo do esforço mensal dos servidores técnico-administrativos."),
     tags$title("Minhas Entregas · Esforço e entregas"),
+    # O seletor de data só existe dentro da janela de lançamento; sem isto,
+    # a biblioteca do calendário não é carregada com a página e ele falha lá.
+    htmltools::findDependencies(dateInput("dep_calendario", NULL)),
+    # O Shiny não distribui o idioma do calendário, então ele é definido aqui
+    tags$script(HTML(
+      "$(function() {
+         if (!$.fn.bsDatepicker) return;
+         $.fn.bsDatepicker.dates['pt-BR'] = {
+           days: ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'],
+           daysShort: ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],
+           daysMin: ['D','S','T','Q','Q','S','S'],
+           months: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
+           monthsShort: ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'],
+           today: 'Hoje', clear: 'Limpar', monthsTitle: 'Meses',
+           format: 'dd/mm/yyyy', weekStart: 1
+         };
+       });"
+    )),
     # SIAPE e senha seguem juntos no mesmo envio (evita corrida com o texto
     # ainda não sincronizado ao colar a senha e apertar Enter logo em seguida)
     tags$script(HTML(

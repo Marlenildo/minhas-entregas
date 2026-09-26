@@ -268,32 +268,20 @@ function(input, output, session) {
             ## Lançamentos ----
             div(
               class = "painel painel-verde",
-              cabecalho_secao("pen-to-square", "Lançamentos do ano", "Somente você vê estes dados", "tag-verde"),
-              p(
-                class = "explicacao",
-                "Escolha a atividade, informe as entregas e as horas dedicadas. Para editar ou remover, selecione o lançamento na tabela. As alterações só são permitidas enquanto o ano do ciclo estiver aberto."
-              ),
               div(
-                id = "caixa_formulario",
-                class = "caixa-formulario",
-                uiOutput("out_modo_formulario"),
-                fluidRow(
-                  column(2, dateInput("in_data", "Data", value = data_padrao_ciclo(ano_padrao(anos)),
-                                      format = "dd/mm/yyyy", language = "pt-BR", weekstart = 1, width = "100%")),
-                  column(4, selectInput("in_codigo", "Atividade", choices = codigos_validos(), width = "100%")),
-                  column(2, numericInput("in_entregas", "Entregas", 0, min = 0, step = 1, width = "100%")),
-                  column(2, numericInput("in_horas", "Horas dedicadas", 0, min = 0, step = 0.5, width = "100%")),
-                  column(2, selectInput("in_status", "Situação", STATUS_ENTREGA, width = "100%"))
-                ),
+                class = "cabecalho-secao",
+                h4(icon("pen-to-square"), "Lançamentos do ano"),
                 div(
-                  class = "barra-acoes",
-                  actionButton("btn_add", "Adicionar", icon = icon("plus"), class = "btn-adicionar"),
-                  actionButton("btn_update", "Salvar alterações", icon = icon("floppy-disk"), class = "btn-salvar"),
-                  actionButton("btn_delete", "Remover", icon = icon("trash"), class = "btn-remover"),
-                  actionButton("btn_limpar", "Novo lançamento", icon = icon("eraser"), class = "btn-neutro")
+                  class = "acoes-secao",
+                  div(class = "tag-secao tag-verde", "Somente você vê estes dados"),
+                  actionButton("btn_novo", "Novo lançamento", icon = icon("plus"), class = "btn-adicionar")
                 )
               ),
-              DTOutput("out_tabela_entregas")
+              p(
+                class = "explicacao",
+                "Cada lançamento é um cartão. Clique no cartão para editar ou remover, com confirmação. As alterações só são permitidas enquanto o ano do ciclo estiver aberto."
+              ),
+              uiOutput("out_lista_entregas")
             )
           ),
           aba_relatorios
@@ -317,22 +305,17 @@ function(input, output, session) {
             tagList(icon("calendar-check"), "Anos do ciclo"),
             div(
               class = "painel painel-navy",
-              cabecalho_secao("calendar-check", "Anos do ciclo", "Apenas um ano aberto"),
-              p(class = "explicacao", "Crie, abra ou feche anos de ciclo. Ao abrir um ano, os demais são fechados automaticamente. Anos com entregas não podem ser removidos."),
               div(
-                class = "caixa-formulario",
-                fluidRow(
-                  column(3, numericInput("in_ano", "Ano", value = as.integer(format(Sys.Date(), "%Y")), min = 2000, max = 2100, width = "100%")),
-                  column(3, selectInput("in_status_ano", "Situação", choices = c("Aberto" = "aberto", "Fechado" = "fechado"), width = "100%"))
-                ),
+                class = "cabecalho-secao",
+                h4(icon("calendar-check"), "Anos do ciclo"),
                 div(
-                  class = "barra-acoes",
-                  actionButton("btn_add_ano", "Adicionar", icon = icon("plus"), class = "btn-adicionar"),
-                  actionButton("btn_edit_ano", "Alterar situação", icon = icon("floppy-disk"), class = "btn-salvar"),
-                  actionButton("btn_del_ano", "Remover", icon = icon("trash"), class = "btn-remover")
+                  class = "acoes-secao",
+                  div(class = "tag-secao", "Apenas um ano aberto"),
+                  actionButton("btn_novo_ano", "Novo ano", icon = icon("plus"), class = "btn-adicionar")
                 )
               ),
-              DTOutput("out_tabela_anos"),
+              p(class = "explicacao", "Ao abrir um ano, os demais são fechados automaticamente. Anos com entregas registradas não podem ser removidos."),
+              uiOutput("out_lista_anos"),
               tags$hr(),
               div(class = "titulo-bloco", "Histórico de ações administrativas"),
               p(class = "explicacao", "Registro das alterações realizadas nos anos de ciclo (criar, abrir, fechar, remover)."),
@@ -344,22 +327,17 @@ function(input, output, session) {
             tagList(icon("tags"), "Atividades"),
             div(
               class = "painel painel-navy",
-              cabecalho_secao("tags", "Atividades disponíveis", "Códigos de entrega"),
-              p(class = "explicacao", "Códigos de entrega que os servidores escolhem ao registrar suas atividades."),
               div(
-                class = "caixa-formulario",
-                fluidRow(
-                  column(3, textInput("in_codigo_id", "Código", width = "100%")),
-                  column(9, textInput("in_codigo_desc", "Descrição", width = "100%"))
-                ),
+                class = "cabecalho-secao",
+                h4(icon("tags"), "Atividades disponíveis"),
                 div(
-                  class = "barra-acoes",
-                  actionButton("btn_add_codigo", "Adicionar", icon = icon("plus"), class = "btn-adicionar"),
-                  actionButton("btn_edit_codigo", "Salvar alterações", icon = icon("floppy-disk"), class = "btn-salvar"),
-                  actionButton("btn_del_codigo", "Remover", icon = icon("trash"), class = "btn-remover")
+                  class = "acoes-secao",
+                  div(class = "tag-secao", "Códigos de entrega"),
+                  actionButton("btn_nova_atividade", "Nova atividade", icon = icon("plus"), class = "btn-adicionar")
                 )
               ),
-              DTOutput("out_tabela_codigos")
+              p(class = "explicacao", "Atividades que os servidores escolhem ao registrar suas entregas. Clique em uma atividade para editar ou remover."),
+              uiOutput("out_lista_codigos")
             )
           ),
           ## Admin -> Servidores ----
@@ -367,22 +345,17 @@ function(input, output, session) {
             tagList(icon("users"), "Servidores"),
             div(
               class = "painel painel-navy",
-              cabecalho_secao("users", "Servidores", "Acesso ao sistema"),
-              p(class = "explicacao", "Cadastre servidores ou atualize nome e SIAPE. Servidores com entregas registradas não podem ser removidos. As senhas nunca são exibidas."),
               div(
-                class = "caixa-formulario",
-                fluidRow(
-                  column(3, textInput("in_servidor_siape", "SIAPE", width = "100%")),
-                  column(9, textInput("in_servidor_nome", "Nome", width = "100%"))
-                ),
+                class = "cabecalho-secao",
+                h4(icon("users"), "Servidores"),
                 div(
-                  class = "barra-acoes",
-                  actionButton("btn_add_servidor", "Adicionar", icon = icon("plus"), class = "btn-adicionar"),
-                  actionButton("btn_edit_servidor", "Salvar alterações", icon = icon("floppy-disk"), class = "btn-salvar"),
-                  actionButton("btn_del_servidor", "Remover", icon = icon("trash"), class = "btn-remover")
+                  class = "acoes-secao",
+                  div(class = "tag-secao", "Acesso ao sistema"),
+                  actionButton("btn_novo_servidor", "Novo servidor", icon = icon("plus"), class = "btn-adicionar")
                 )
               ),
-              DTOutput("out_tabela_servidores")
+              p(class = "explicacao", "Clique em um servidor para editar nome e SIAPE. Servidores com entregas registradas não podem ser removidos. As senhas nunca são exibidas."),
+              uiOutput("out_lista_servidores")
             )
           )
         )
@@ -394,7 +367,15 @@ function(input, output, session) {
 
 
   # 6. TABELAS ----
-  tabela_padrao <- function(dados, selection = "single", escape = TRUE, pageLength = 15, ordem = list()) {
+  # `ocultar_mobile`: colunas secundárias, escondidas em telas estreitas pelo CSS
+  tabela_padrao <- function(dados, selection = "single", escape = TRUE, pageLength = 15,
+                            ordem = list(), ocultar_mobile = character(), alinhar_direita = character()) {
+    coluna <- function(nomes) as.list(match(intersect(nomes, names(dados)), names(dados)) - 1L)
+    definicoes <- c(
+      lapply(coluna(ocultar_mobile), function(i) list(targets = i, className = "ocultar-mobile")),
+      lapply(coluna(alinhar_direita), function(i) list(targets = i, className = "dt-right"))
+    )
+
     datatable(
       dados,
       extensions = "Buttons",
@@ -406,6 +387,8 @@ function(input, output, session) {
         buttons = c("copy", "excel", "pdf", "print"),
         pageLength = pageLength,
         order = ordem,
+        columnDefs = definicoes,
+        autoWidth = FALSE,
         lengthMenu = list(c(5, 10, 15, 25, 50, 100), c("5", "10", "15", "25", "50", "100")),
         language = list(
           decimal = ",",
@@ -450,16 +433,10 @@ function(input, output, session) {
     }
   })
 
-  ## Ao trocar o ano: limita a data ao ano e escolhe o mês do resumo ----
+  ## Ao trocar o ano, o resumo vai para o mês mais relevante ----
   observeEvent(input$in_ano_ciclo, {
     req(eh_servidor())
     ano <- ano_ciclo()
-    updateDateInput(
-      session, "in_data",
-      value = data_padrao_ciclo(ano),
-      min   = as.Date(paste0(ano, "-01-01")),
-      max   = as.Date(paste0(ano, "-12-31"))
-    )
     dados <- minhas_entregas()
     mes <- if (format(Sys.Date(), "%Y") == as.character(ano)) {
       format(Sys.Date(), "%m")
@@ -469,6 +446,11 @@ function(input, output, session) {
       "01"
     }
     updateSelectInput(session, "in_mes_resumo", selected = mes)
+  })
+
+  observe({
+    req(eh_servidor(), input$in_ano_ciclo)
+    shinyjs::toggleState("btn_novo", condition = ano_esta_aberto())
   })
 
   entregas_do_mes <- reactive({
@@ -536,74 +518,114 @@ function(input, output, session) {
     )
   })
 
-  ## Tabela e seleção ----
-  output$out_tabela_entregas <- renderDT({
+  ## Lista de lançamentos em cartões ----
+  output$out_lista_entregas <- renderUI({
     dados <- minhas_entregas()
-    exibir <- data.frame(
-      Data = fmt_data(dados$data),
-      Atividade = dados$codigo,
-      Entregas = dados$entregas,
-      Horas = dados$horas,
-      `Situação` = selo_status(dados$status),
-      check.names = FALSE
-    )
-    tabela_padrao(exibir, selection = "single", escape = sem_escape(exibir, "Situação"))
-  })
+    aberto <- ano_esta_aberto()
 
-  proxy_entregas <- dataTableProxy("out_tabela_entregas")
+    if (nrow(dados) == 0) {
+      return(div(
+        class = "nenhum-registro",
+        paste0("Nenhum lançamento em ", ano_ciclo(), "."),
+        if (aberto) tagList(br(), "Use \u201cNovo lançamento\u201d para registrar o primeiro.")
+      ))
+    }
 
-  entrega_selecionada <- reactive({
-    sel <- input$out_tabela_entregas_rows_selected
-    dados <- minhas_entregas()
-    if (length(sel) != 1 || sel > nrow(dados)) return(NULL)
-    dados[sel, , drop = FALSE]
-  })
-
-  observeEvent(entrega_selecionada(), {
-    linha <- entrega_selecionada()
-    updateDateInput(session, "in_data", value = as.Date(linha$data))
-    updateSelectInput(session, "in_codigo",
-                      choices = union(codigos_validos(), linha$codigo), selected = linha$codigo)
-    updateNumericInput(session, "in_entregas", value = linha$entregas)
-    updateNumericInput(session, "in_horas", value = linha$horas)
-    updateSelectInput(session, "in_status", selected = linha$status)
-  })
-
-  output$out_modo_formulario <- renderUI({
-    linha <- entrega_selecionada()
+    meses <- format(as.Date(dados$data), "%m")
     div(
-      class = "modo-formulario",
-      if (is.null(linha)) tagList(icon("circle-plus"), "Novo lançamento")
-      else tagList(icon("pen"), paste("Editando o lançamento de", fmt_data(linha$data)))
+      class = "lista-entregas",
+      lapply(sort(unique(meses), decreasing = TRUE), function(mes) {
+        grupo <- dados[meses == mes, , drop = FALSE]
+        tagList(
+          div(
+            class = "grupo-mes",
+            span(class = "grupo-nome", MESES[[mes]]),
+            span(
+              class = "grupo-resumo",
+              fmt_horas(sum(grupo$horas, na.rm = TRUE)), " · ",
+              fmt_num(sum(grupo$entregas, na.rm = TRUE), 0), " entregas · ",
+              nrow(grupo), if (nrow(grupo) == 1) " lançamento" else " lançamentos"
+            )
+          ),
+          lapply(seq_len(nrow(grupo)), function(i) cartao_entrega(grupo[i, , drop = FALSE], aberto))
+        )
+      })
     )
   })
 
-  limpar_formulario <- function() {
-    selectRows(proxy_entregas, NULL)
-    updateDateInput(session, "in_data", value = data_padrao_ciclo(ano_ciclo()))
-    updateSelectInput(session, "in_codigo", choices = codigos_validos(), selected = codigos_validos()[1])
-    updateNumericInput(session, "in_entregas", value = 0)
-    updateNumericInput(session, "in_horas", value = 0)
-    updateSelectInput(session, "in_status", selected = "Em andamento")
+  ## Formulário em janela (mesma janela serve para criar e editar) ----
+  entrega_em_edicao <- reactiveVal(NULL)
+
+  buscar_entrega <- function(id) {
+    dados <- minhas_entregas()
+    linha <- dados[as.character(dados$id) == as.character(id), , drop = FALSE]
+    if (nrow(linha) != 1) NULL else linha
   }
 
-  observeEvent(input$btn_limpar, {
-    req(eh_servidor())
-    limpar_formulario()
+  form_entrega <- function(linha = NULL) {
+    codigos <- codigos_validos()
+    if (!is.null(linha)) codigos <- union(codigos, linha$codigo)
+    ano <- ano_ciclo()
+
+    showModal(modalDialog(
+      title = if (is.null(linha)) tagList(icon("circle-plus"), " Novo lançamento")
+              else tagList(icon("pen"), " Editar lançamento"),
+      easyClose = TRUE,
+      div(
+        class = "form-entrega",
+        fluidRow(
+          column(6, dateInput(
+            "in_data", "Data",
+            value = if (is.null(linha)) data_padrao_ciclo(ano) else as.Date(linha$data),
+            min = as.Date(paste0(ano, "-01-01")), max = as.Date(paste0(ano, "-12-31")),
+            format = "dd/mm/yyyy", language = "pt-BR", weekstart = 1, width = "100%"
+          )),
+          column(6, selectInput("in_status", "Situação", STATUS_ENTREGA,
+                                selected = linha$status %||% "Em andamento", width = "100%"))
+        ),
+        selectInput("in_codigo", "Atividade", choices = codigos,
+                    selected = linha$codigo %||% codigos[1], width = "100%"),
+        fluidRow(
+          column(6, numericInput("in_entregas", "Entregas", value = linha$entregas %||% 0,
+                                 min = 0, step = 1, width = "100%")),
+          column(6, numericInput("in_horas", "Horas dedicadas", value = linha$horas %||% 0,
+                                 min = 0, step = 0.5, width = "100%"))
+        )
+      ),
+      footer = tagList(
+        if (!is.null(linha)) actionButton("btn_remover_form", "Remover", icon = icon("trash"),
+                                          class = "btn-remover acao-esquerda"),
+        modalButton("Cancelar"),
+        actionButton(
+          "btn_salvar_form",
+          if (is.null(linha)) "Adicionar" else "Salvar alterações",
+          icon = icon(if (is.null(linha)) "plus" else "floppy-disk"),
+          class = if (is.null(linha)) "btn-adicionar" else "btn-salvar"
+        )
+      )
+    ))
+  }
+
+  observeEvent(input$btn_novo, {
+    req(eh_servidor(), ano_ciclo())
+    if (!ano_esta_aberto()) {
+      showNotification("Ano fechado. Não é possível inserir entregas.", type = "error")
+      return()
+    }
+    entrega_em_edicao(NULL)
+    form_entrega(NULL)
   })
 
-  ## Bloqueio visual quando o ano está fechado ou sem seleção ----
-  observe({
-    req(eh_servidor(), input$in_ano_ciclo)
-    aberto <- ano_esta_aberto()
-    selecionada <- !is.null(entrega_selecionada())
-
-    for (id in c("in_data", "in_codigo", "in_entregas", "in_horas", "in_status", "btn_add", "btn_limpar")) {
-      shinyjs::toggleState(id, condition = aberto)
+  observeEvent(input$abrir_entrega, {
+    req(eh_servidor())
+    linha <- buscar_entrega(input$abrir_entrega)
+    req(linha)
+    if (!ano_esta_aberto()) {
+      showNotification("Ano fechado. Este lançamento só pode ser consultado.", type = "warning")
+      return()
     }
-    shinyjs::toggleState("btn_update", condition = aberto && selecionada)
-    shinyjs::toggleState("btn_delete", condition = aberto && selecionada)
-    shinyjs::toggleClass("caixa_formulario", "editando", condition = selecionada)
+    entrega_em_edicao(linha$id)
+    form_entrega(linha)
   })
 
   ## Validação no servidor (vale mesmo se o navegador for manipulado) ----
@@ -614,7 +636,7 @@ function(input, output, session) {
 
     if (length(data) != 1 || is.na(data)) return("Informe a data do lançamento.")
     if (format(as.Date(data), "%Y") != as.character(ano_ciclo()))
-      return(paste("A data deve estar dentro do ano do ciclo", ano_ciclo(), "."))
+      return(paste0("A data deve estar dentro do ano do ciclo ", ano_ciclo(), "."))
     if (!(input$in_codigo %in% c(codigos_validos(), codigo_atual))) return("Selecione uma atividade válida.")
     if (!is.numeric(entregas) || length(entregas) != 1 || is.na(entregas) || entregas < 0 || entregas != round(entregas))
       return("Informe a quantidade de entregas (número inteiro, zero ou maior).")
@@ -625,100 +647,95 @@ function(input, output, session) {
     NULL
   }
 
-  ## Adicionar ----
-  observeEvent(input$btn_add, {
+  ## Gravar (inclusão ou edição) ----
+  observeEvent(input$btn_salvar_form, {
     req(eh_servidor(), ano_ciclo())
 
     if (!ano_esta_aberto()) {
-      showNotification("Ano fechado. Não é possível inserir entregas.", type = "error")
-      return()
-    }
-    erro <- validar_lancamento()
-    if (!is.null(erro)) {
-      showNotification(erro, type = "warning")
+      showNotification("Ano fechado. Não é possível alterar entregas.", type = "error")
+      removeModal()
       return()
     }
 
-    ok <- gravar(
-      dbExecute(
-        pool_write,
-        "INSERT INTO entregas (data, ano, codigo, entregas, horas, status, servidor)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)",
-        params = list(
-          as.character(input$in_data), ano_ciclo(), input$in_codigo,
-          input$in_entregas, input$in_horas, input$in_status, usuario()
-        )
-      ),
-      "Entrega adicionada."
-    )
-    if (ok) {
-      marcar(entregas_refresh)
-      limpar_formulario()
+    id <- entrega_em_edicao()
+    linha <- if (!is.null(id)) buscar_entrega(id)
+    if (!is.null(id) && is.null(linha)) {
+      showNotification("Este lançamento não está mais disponível.", type = "warning")
+      removeModal()
+      return()
     }
-  })
 
-  ## Editar (com confirmação) ----
-  id_pendente <- reactiveVal(NULL)
-
-  observeEvent(input$btn_update, {
-    req(eh_servidor())
-    linha <- entrega_selecionada()
-    req(linha)
     erro <- validar_lancamento(codigo_atual = linha$codigo)
     if (!is.null(erro)) {
       showNotification(erro, type = "warning")
       return()
     }
-    id_pendente(linha$id)
-    confirm_action(
-      "confirm_update_entrega",
-      message = paste("Salvar as alterações no lançamento de", fmt_data(linha$data), "?"),
-      label_confirm = "Salvar alterações",
-      class_confirm = "btn-salvar",
-      icon_confirm = icon("floppy-disk")
-    )
-  })
 
-  observeEvent(input$confirm_update_entrega, {
-    removeModal()
-    req(eh_servidor(), id_pendente())
-
-    if (!ano_esta_aberto()) {
-      showNotification("Ano fechado. Não é possível editar entregas.", type = "error")
-      return()
+    ok <- if (is.null(id)) {
+      gravar(
+        dbExecute(
+          pool_write,
+          "INSERT INTO entregas (data, ano, codigo, entregas, horas, status, servidor)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)",
+          params = list(
+            as.character(input$in_data), ano_ciclo(), input$in_codigo,
+            input$in_entregas, input$in_horas, input$in_status, usuario()
+          )
+        ),
+        "Entrega adicionada."
+      )
+    } else {
+      gravar(
+        dbExecute(
+          pool_write,
+          "UPDATE entregas SET data = $1, codigo = $2, entregas = $3, horas = $4, status = $5
+           WHERE id = $6 AND servidor = $7",
+          params = list(
+            as.character(input$in_data), input$in_codigo, input$in_entregas,
+            input$in_horas, input$in_status, id, usuario()
+          )
+        ),
+        "Entrega atualizada."
+      )
     }
 
-    ok <- gravar(
-      dbExecute(
-        pool_write,
-        "UPDATE entregas SET data = $1, codigo = $2, entregas = $3, horas = $4, status = $5
-         WHERE id = $6 AND servidor = $7",
-        params = list(
-          as.character(input$in_data), input$in_codigo, input$in_entregas,
-          input$in_horas, input$in_status, id_pendente(), usuario()
-        )
-      ),
-      "Entrega atualizada."
-    )
-    id_pendente(NULL)
     if (ok) {
+      removeModal()
+      entrega_em_edicao(NULL)
       marcar(entregas_refresh)
-      limpar_formulario()
     }
   })
 
   ## Remover (com confirmação) ----
-  observeEvent(input$btn_delete, {
-    req(eh_servidor())
-    linha <- entrega_selecionada()
-    req(linha)
+  id_pendente <- reactiveVal(NULL)
+
+  pedir_remocao <- function(linha) {
     id_pendente(linha$id)
     confirm_action(
       "confirm_delete_entrega",
-      message = paste0("Remover o lançamento de ", fmt_data(linha$data), " (", linha$codigo, ")? Esta ação não pode ser desfeita."),
+      message = paste0("Remover o lançamento de ", fmt_data(linha$data), " (", linha$codigo,
+                       ")? Esta ação não pode ser desfeita."),
       label_confirm = "Remover",
       icon_confirm = icon("trash")
     )
+  }
+
+  observeEvent(input$remover_entrega, {
+    req(eh_servidor())
+    linha <- buscar_entrega(input$remover_entrega)
+    req(linha)
+    if (!ano_esta_aberto()) {
+      showNotification("Ano fechado. Não é possível remover entregas.", type = "error")
+      return()
+    }
+    pedir_remocao(linha)
+  })
+
+  observeEvent(input$btn_remover_form, {
+    req(eh_servidor(), entrega_em_edicao())
+    linha <- buscar_entrega(entrega_em_edicao())
+    req(linha)
+    pedir_remocao(linha)
   })
 
   observeEvent(input$confirm_delete_entrega, {
@@ -736,10 +753,8 @@ function(input, output, session) {
       "Entrega removida."
     )
     id_pendente(NULL)
-    if (ok) {
-      marcar(entregas_refresh)
-      limpar_formulario()
-    }
+    entrega_em_edicao(NULL)
+    if (ok) marcar(entregas_refresh)
   })
 
 
@@ -820,17 +835,19 @@ function(input, output, session) {
     resumo$percentual <- ifelse(total > 0, round(resumo$horas / total * 100, 1), 0)
     resumo <- resumo[order(resumo$ano, resumo$mes, -resumo$horas, decreasing = c(TRUE, TRUE, FALSE), method = "radix"), ]
 
+    # O esforço aparece como barra proporcional, mais legível que o número sozinho
+    cores <- CORES_ESFORCO[(match(resumo$codigo, sort(unique(resumo$codigo))) - 1) %% length(CORES_ESFORCO) + 1]
+
     exibir <- data.frame(
-      Ano = resumo$ano,
-      `Mês` = unname(MESES[resumo$mes]),
+      `Período` = paste(unname(MESES[resumo$mes]), resumo$ano),
       Atividade = resumo$codigo,
-      Entregas = resumo$entregas,
-      Horas = resumo$horas,
-      `Esforço no mês (%)` = resumo$percentual,
+      Entregas = fmt_num(resumo$entregas, 0),
+      Horas = fmt_horas(resumo$horas),
+      `Esforço no mês` = mapply(barra_percentual, resumo$percentual, cores),
       check.names = FALSE
     )
-    formatRound(tabela_padrao(exibir, selection = "none"), c("Horas", "Esforço no mês (%)"),
-                digits = 1, mark = ".", dec.mark = ",")
+    tabela_padrao(exibir, selection = "none", escape = sem_escape(exibir, "Esforço no mês"),
+                  ocultar_mobile = "Entregas", alinhar_direita = c("Entregas", "Horas"))
   })
 
 
@@ -859,13 +876,13 @@ function(input, output, session) {
       Servidor = ifelse(is.na(dados$nome_servidor), "", dados$nome_servidor),
       SIAPE = dados$servidor,
       Atividade = dados$codigo,
-      Entregas = dados$entregas,
-      Horas = dados$horas,
+      Entregas = fmt_num(dados$entregas, 0),
+      Horas = fmt_horas(dados$horas),
       `Situação` = selo_status(dados$status),
-      Ano = dados$ano,
       check.names = FALSE
     )
-    tabela_padrao(exibir, selection = "none", escape = sem_escape(exibir, "Situação"))
+    tabela_padrao(exibir, selection = "none", escape = sem_escape(exibir, "Situação"),
+                  ocultar_mobile = c("SIAPE", "Entregas"), alinhar_direita = c("Entregas", "Horas"))
   })
 
   ## Anos do ciclo ----
@@ -875,34 +892,31 @@ function(input, output, session) {
     dbGetQuery(pool_read, "SELECT * FROM anos_ciclo ORDER BY ano DESC")
   })
 
-  output$out_tabela_anos <- renderDT({
+  output$out_lista_anos <- renderUI({
     dados <- tb_anos()
-    exibir <- dados
-    exibir$ano <- as.character(exibir$ano)
-    exibir$status <- selo_ano(exibir$status)
-    names(exibir)[names(exibir) == "ano"] <- "Ano"
-    names(exibir)[names(exibir) == "status"] <- "Situação"
-    tabela_padrao(exibir, escape = sem_escape(exibir, "Situação"), pageLength = 10)
-  })
+    if (nrow(dados) == 0) {
+      return(div(class = "nenhum-registro", "Nenhum ano de ciclo cadastrado."))
+    }
 
-  ano_selecionado <- reactive({
-    sel <- input$out_tabela_anos_rows_selected
-    dados <- tb_anos()
-    if (length(sel) != 1 || sel > nrow(dados)) return(NULL)
-    dados[sel, , drop = FALSE]
-  })
-
-  observeEvent(ano_selecionado(), {
-    linha <- ano_selecionado()
-    updateNumericInput(session, "in_ano", value = linha$ano)
-    updateSelectInput(session, "in_status_ano", selected = linha$status)
-  })
-
-  observe({
-    req(eh_admin())
-    selecionado <- !is.null(ano_selecionado())
-    shinyjs::toggleState("btn_edit_ano", condition = selecionado)
-    shinyjs::toggleState("btn_del_ano", condition = selecionado)
+    div(
+      class = "lista-registros",
+      lapply(seq_len(nrow(dados)), function(i) {
+        linha <- dados[i, , drop = FALSE]
+        aberto <- identical(linha$status, "aberto")
+        linha_registro(
+          destaque = icon(if (aberto) "lock-open" else "lock"),
+          titulo = as.character(linha$ano),
+          subtitulo = if (aberto) "Lançamentos liberados para os servidores" else "Apenas consulta",
+          selo = HTML(selo_ano(linha$status)),
+          acoes = tagList(
+            botao_evento("alternar_ano", linha$ano,
+                         if (aberto) "Fechar este ano" else "Abrir este ano",
+                         if (aberto) "lock" else "lock-open", "btn-icone-editar"),
+            botao_evento("remover_ano", linha$ano, "Remover este ano", "trash", "btn-icone-remover")
+          )
+        )
+      })
+    )
   })
 
   output$out_tabela_audit_anos <- renderDT({
@@ -917,7 +931,7 @@ function(input, output, session) {
     )
     if (nrow(dados) > 0) dados$momento <- format(as.POSIXct(dados$momento), "%d/%m/%Y %H:%M")
     names(dados) <- c("Momento", "Usuário", "Ação", "Ano", "IP")[seq_along(dados)]
-    tabela_padrao(dados, selection = "none", pageLength = 10)
+    tabela_padrao(dados, selection = "none", pageLength = 10, ocultar_mobile = c("IP", "Usuário"))
   })
 
   # Ao abrir um ano, os demais são fechados na mesma transação (só um ano aberto)
@@ -928,11 +942,28 @@ function(input, output, session) {
     dbExecute(con, "UPDATE anos_ciclo SET status = $1 WHERE ano = $2", params = list(status, ano))
   }
 
+  observeEvent(input$btn_novo_ano, {
+    req(eh_admin())
+    showModal(modalDialog(
+      title = tagList(icon("circle-plus"), " Novo ano de ciclo"),
+      easyClose = TRUE,
+      numericInput("in_ano", "Ano", value = as.integer(format(Sys.Date(), "%Y")),
+                   min = 2000, max = 2100, step = 1, width = "100%"),
+      selectInput("in_status_ano", "Situação", choices = c("Aberto" = "aberto", "Fechado" = "fechado"),
+                  selected = "fechado", width = "100%"),
+      div(class = "explicacao", "Ao criar um ano já aberto, os demais são fechados automaticamente."),
+      footer = tagList(
+        modalButton("Cancelar"),
+        actionButton("btn_add_ano", "Adicionar", icon = icon("plus"), class = "btn-adicionar")
+      )
+    ))
+  })
+
   observeEvent(input$btn_add_ano, {
     req(eh_admin())
     ano <- input$in_ano
     status <- input$in_status_ano
-    if (!is.numeric(ano) || is.na(ano) || ano < 2000 || ano > 2100 || ano != round(ano)) {
+    if (!is.numeric(ano) || length(ano) != 1 || is.na(ano) || ano < 2000 || ano > 2100 || ano != round(ano)) {
       showNotification("Informe um ano válido.", type = "warning")
       return()
     }
@@ -952,6 +983,7 @@ function(input, output, session) {
       "Ano adicionado."
     )
     if (ok) {
+      removeModal()
       registrar_auditoria(paste("criou ano com status", status), "ano_ciclo", as.character(ano))
       marcar(admin_refresh)
     }
@@ -959,21 +991,29 @@ function(input, output, session) {
 
   ano_pendente <- reactiveVal(NULL)
 
-  observeEvent(input$btn_edit_ano, {
+  buscar_ano <- function(ano) {
+    dados <- tb_anos()
+    linha <- dados[as.character(dados$ano) == as.character(ano), , drop = FALSE]
+    if (nrow(linha) != 1) NULL else linha
+  }
+
+  observeEvent(input$alternar_ano, {
     req(eh_admin())
-    linha <- ano_selecionado()
+    linha <- buscar_ano(input$alternar_ano)
     req(linha)
-    req(input$in_status_ano %in% c("aberto", "fechado"))
-    ano_pendente(list(ano = linha$ano, status = input$in_status_ano))
+    novo_status <- if (identical(linha$status, "aberto")) "fechado" else "aberto"
+    ano_pendente(list(ano = linha$ano, status = novo_status))
+
     confirm_action(
       "confirm_edit_ano",
       message = paste0(
-        "Alterar a situação do ano ", linha$ano, " para \"", input$in_status_ano, "\"?",
-        if (input$in_status_ano == "aberto") " Os demais anos serão fechados." else ""
+        if (novo_status == "aberto") "Abrir" else "Fechar", " o ano ", linha$ano, "?",
+        if (novo_status == "aberto") " Os demais anos serão fechados e os servidores poderão lançar entregas neste ano."
+        else " Os servidores deixarão de poder lançar ou alterar entregas deste ano."
       ),
-      label_confirm = "Alterar situação",
+      label_confirm = if (novo_status == "aberto") "Abrir ano" else "Fechar ano",
       class_confirm = "btn-salvar",
-      icon_confirm = icon("floppy-disk")
+      icon_confirm = icon(if (novo_status == "aberto") "lock-open" else "lock")
     )
   })
 
@@ -994,9 +1034,9 @@ function(input, output, session) {
   })
 
   # Nunca permitir apagar ano que tenha entregas
-  observeEvent(input$btn_del_ano, {
+  observeEvent(input$remover_ano, {
     req(eh_admin())
-    linha <- ano_selecionado()
+    linha <- buscar_ano(input$remover_ano)
     req(linha)
 
     qtd <- dbGetQuery(pool_read, "SELECT COUNT(*) FROM entregas WHERE ano = $1", params = list(linha$ano))
@@ -1007,7 +1047,7 @@ function(input, output, session) {
     ano_pendente(list(ano = linha$ano))
     confirm_action(
       "confirm_delete_ano",
-      message = paste("Remover o ano", linha$ano, "? Esta ação não pode ser desfeita."),
+      message = paste0("Remover o ano ", linha$ano, "? Esta ação não pode ser desfeita."),
       label_confirm = "Remover",
       icon_confirm = icon("trash")
     )
@@ -1036,34 +1076,72 @@ function(input, output, session) {
     dbGetQuery(pool_read, "SELECT * FROM codigos_entrega ORDER BY codigo")
   })
 
-  output$out_tabela_codigos <- renderDT({
+  output$out_lista_codigos <- renderUI({
     dados <- tb_codigos()
-    exibir <- dados[, intersect(c("codigo", "descricao"), names(dados)), drop = FALSE]
-    names(exibir) <- c("Código", "Descrição")[seq_along(exibir)]
-    tabela_padrao(exibir)
+    if (nrow(dados) == 0) {
+      return(div(class = "nenhum-registro", "Nenhuma atividade cadastrada."))
+    }
+
+    div(
+      class = "lista-registros",
+      lapply(seq_len(nrow(dados)), function(i) {
+        linha <- dados[i, , drop = FALSE]
+        linha_registro(
+          destaque = span(class = "etiqueta-codigo", linha$codigo),
+          titulo = linha$descricao,
+          subtitulo = paste("Código", linha$codigo),
+          acoes = tagList(
+            botao_evento("abrir_codigo", linha$id, "Editar atividade", "pen", "btn-icone-editar"),
+            botao_evento("remover_codigo", linha$id, "Remover atividade", "trash", "btn-icone-remover")
+          ),
+          evento = "abrir_codigo", valor = linha$id
+        )
+      })
+    )
   })
 
-  codigo_selecionado <- reactive({
-    sel <- input$out_tabela_codigos_rows_selected
+  codigo_em_edicao <- reactiveVal(NULL)
+
+  form_codigo <- function(linha = NULL) {
+    showModal(modalDialog(
+      title = if (is.null(linha)) tagList(icon("circle-plus"), " Nova atividade")
+              else tagList(icon("pen"), " Editar atividade"),
+      easyClose = TRUE,
+      textInput("in_codigo_id", "Código", value = linha$codigo %||% "", width = "100%"),
+      textInput("in_codigo_desc", "Descrição", value = linha$descricao %||% "", width = "100%"),
+      footer = tagList(
+        if (!is.null(linha)) actionButton("btn_del_codigo", "Remover", icon = icon("trash"),
+                                          class = "btn-remover acao-esquerda"),
+        modalButton("Cancelar"),
+        actionButton("btn_salvar_codigo",
+                     if (is.null(linha)) "Adicionar" else "Salvar alterações",
+                     icon = icon(if (is.null(linha)) "plus" else "floppy-disk"),
+                     class = if (is.null(linha)) "btn-adicionar" else "btn-salvar")
+      )
+    ))
+  }
+
+  buscar_codigo <- function(id) {
     dados <- tb_codigos()
-    if (length(sel) != 1 || sel > nrow(dados)) return(NULL)
-    dados[sel, , drop = FALSE]
-  })
+    linha <- dados[as.character(dados$id) == as.character(id), , drop = FALSE]
+    if (nrow(linha) != 1) NULL else linha
+  }
 
-  observeEvent(codigo_selecionado(), {
-    linha <- codigo_selecionado()
-    updateTextInput(session, "in_codigo_id", value = linha$codigo)
-    updateTextInput(session, "in_codigo_desc", value = linha$descricao)
-  })
-
-  observe({
+  observeEvent(input$btn_nova_atividade, {
     req(eh_admin())
-    selecionado <- !is.null(codigo_selecionado())
-    shinyjs::toggleState("btn_edit_codigo", condition = selecionado)
-    shinyjs::toggleState("btn_del_codigo", condition = selecionado)
+    codigo_em_edicao(NULL)
+    form_codigo(NULL)
   })
 
-  observeEvent(input$btn_add_codigo, {
+  observeEvent(input$abrir_codigo, {
+    req(eh_admin())
+    linha <- buscar_codigo(input$abrir_codigo)
+    req(linha)
+    codigo_em_edicao(linha$id)
+    form_codigo(linha)
+  })
+
+  observeEvent(input$btn_salvar_codigo, {
     req(eh_admin())
     codigo <- texto_limpo(input$in_codigo_id)
     descricao <- texto_limpo(input$in_codigo_desc)
@@ -1072,98 +1150,77 @@ function(input, output, session) {
       return()
     }
 
-    existe <- dbGetQuery(pool_read, "SELECT COUNT(*) FROM codigos_entrega WHERE codigo = $1", params = list(codigo))
-    if (existe[1, 1] > 0) {
-      showNotification("Este código já está cadastrado.", type = "warning")
+    id <- codigo_em_edicao()
+    duplicado <- if (is.null(id)) {
+      dbGetQuery(pool_read, "SELECT COUNT(*) FROM codigos_entrega WHERE codigo = $1", params = list(codigo))
+    } else {
+      dbGetQuery(pool_read, "SELECT COUNT(*) FROM codigos_entrega WHERE codigo = $1 AND id != $2",
+                 params = list(codigo, id))
+    }
+    if (duplicado[1, 1] > 0) {
+      showNotification("Já existe uma atividade com este código.", type = "warning")
       return()
     }
 
-    ok <- gravar(
-      dbExecute(pool_write, "INSERT INTO codigos_entrega (codigo, descricao) VALUES ($1, $2)",
-                params = list(codigo, descricao)),
-      "Atividade adicionada."
-    )
+    ok <- if (is.null(id)) {
+      gravar(
+        dbExecute(pool_write, "INSERT INTO codigos_entrega (codigo, descricao) VALUES ($1, $2)",
+                  params = list(codigo, descricao)),
+        "Atividade adicionada."
+      )
+    } else {
+      gravar(
+        dbExecute(pool_write, "UPDATE codigos_entrega SET codigo = $1, descricao = $2 WHERE id = $3",
+                  params = list(codigo, descricao, id)),
+        "Atividade atualizada."
+      )
+    }
     if (ok) {
+      removeModal()
+      codigo_em_edicao(NULL)
       marcar(admin_refresh)
-      updateTextInput(session, "in_codigo_id", value = "")
-      updateTextInput(session, "in_codigo_desc", value = "")
     }
   })
 
   codigo_pendente <- reactiveVal(NULL)
 
-  observeEvent(input$btn_edit_codigo, {
-    req(eh_admin())
-    linha <- codigo_selecionado()
-    req(linha)
-    codigo <- texto_limpo(input$in_codigo_id)
-    descricao <- texto_limpo(input$in_codigo_desc)
-    if (!nzchar(codigo) || !nzchar(descricao)) {
-      showNotification("Informe o código e a descrição.", type = "warning")
-      return()
-    }
-    codigo_pendente(list(id = linha$id, codigo = codigo, descricao = descricao))
-    confirm_action(
-      "confirm_edit_codigo",
-      message = paste0("Salvar as alterações na atividade ", linha$codigo, "?"),
-      label_confirm = "Salvar alterações",
-      class_confirm = "btn-salvar",
-      icon_confirm = icon("floppy-disk")
-    )
-  })
-
-  observeEvent(input$confirm_edit_codigo, {
-    removeModal()
-    req(eh_admin(), codigo_pendente())
-    alvo <- codigo_pendente()
-    codigo_pendente(NULL)
-
-    existe <- dbGetQuery(
-      pool_read,
-      "SELECT COUNT(*) FROM codigos_entrega WHERE codigo = $1 AND id != $2",
-      params = list(alvo$codigo, alvo$id)
-    )
-    if (existe[1, 1] > 0) {
-      showNotification("Já existe uma atividade com este código.", type = "warning")
-      return()
-    }
-
-    ok <- gravar(
-      dbExecute(pool_write, "UPDATE codigos_entrega SET codigo = $1, descricao = $2 WHERE id = $3",
-                params = list(alvo$codigo, alvo$descricao, alvo$id)),
-      "Atividade atualizada."
-    )
-    if (ok) marcar(admin_refresh)
-  })
-
-  observeEvent(input$btn_del_codigo, {
-    req(eh_admin())
-    linha <- codigo_selecionado()
-    req(linha)
-    codigo_pendente(list(id = linha$id))
+  pedir_remocao_codigo <- function(linha) {
+    codigo_pendente(linha$id)
     confirm_action(
       "confirm_delete_codigo",
-      message = paste0("Remover a atividade ", linha$codigo, " - ", linha$descricao, "? Os lançamentos já registrados não são alterados."),
+      message = paste0("Remover a atividade ", linha$codigo, " - ", linha$descricao,
+                       "? Os lançamentos já registrados não são alterados."),
       label_confirm = "Remover",
       icon_confirm = icon("trash")
     )
+  }
+
+  observeEvent(input$remover_codigo, {
+    req(eh_admin())
+    linha <- buscar_codigo(input$remover_codigo)
+    req(linha)
+    pedir_remocao_codigo(linha)
+  })
+
+  observeEvent(input$btn_del_codigo, {
+    req(eh_admin(), codigo_em_edicao())
+    linha <- buscar_codigo(codigo_em_edicao())
+    req(linha)
+    pedir_remocao_codigo(linha)
   })
 
   observeEvent(input$confirm_delete_codigo, {
     removeModal()
     req(eh_admin(), codigo_pendente())
-    alvo <- codigo_pendente()
+    id <- codigo_pendente()
     codigo_pendente(NULL)
+    codigo_em_edicao(NULL)
 
     ok <- gravar(
-      dbExecute(pool_write, "DELETE FROM codigos_entrega WHERE id = $1", params = list(alvo$id)),
+      dbExecute(pool_write, "DELETE FROM codigos_entrega WHERE id = $1", params = list(id)),
       "Atividade removida."
     )
-    if (ok) {
-      marcar(admin_refresh)
-      updateTextInput(session, "in_codigo_id", value = "")
-      updateTextInput(session, "in_codigo_desc", value = "")
-    }
+    if (ok) marcar(admin_refresh)
   })
 
   ## Servidores ----
@@ -1173,146 +1230,163 @@ function(input, output, session) {
     dbGetQuery(pool_read, "SELECT * FROM servidores ORDER BY nome")
   })
 
-  output$out_tabela_servidores <- renderDT({
+  output$out_lista_servidores <- renderUI({
     dados <- tb_servidores()
-    # A senha (mesmo em hash) nunca sai do servidor
-    exibir <- data.frame(
-      SIAPE = dados$siape,
-      Nome = dados$nome,
-      `Senha configurada` = ifelse(is.na(dados$senha_hash) | dados$senha_hash == "", "Não", "Sim"),
-      check.names = FALSE
+    if (nrow(dados) == 0) {
+      return(div(class = "nenhum-registro", "Nenhum servidor cadastrado."))
+    }
+
+    div(
+      class = "lista-registros",
+      lapply(seq_len(nrow(dados)), function(i) {
+        linha <- dados[i, , drop = FALSE]
+        # A senha, mesmo em hash, nunca sai do servidor: apenas se existe ou não
+        tem_senha <- !is.na(linha$senha_hash) && nzchar(linha$senha_hash)
+        linha_registro(
+          destaque = div(class = "avatar", iniciais(linha$nome)),
+          titulo = linha$nome,
+          subtitulo = paste("SIAPE", linha$siape),
+          selo = span(class = paste("selo-status", if (tem_senha) "selo-concluido" else "selo-andamento"),
+                      if (tem_senha) "Senha configurada" else "Sem senha"),
+          acoes = tagList(
+            botao_evento("abrir_servidor", linha$siape, "Editar servidor", "pen", "btn-icone-editar"),
+            botao_evento("remover_servidor", linha$siape, "Remover servidor", "trash", "btn-icone-remover")
+          ),
+          evento = "abrir_servidor", valor = linha$siape
+        )
+      })
     )
-    tabela_padrao(exibir)
   })
 
-  servidor_selecionado <- reactive({
-    sel <- input$out_tabela_servidores_rows_selected
+  servidor_em_edicao <- reactiveVal(NULL)
+
+  buscar_servidor <- function(siape) {
     dados <- tb_servidores()
-    if (length(sel) != 1 || sel > nrow(dados)) return(NULL)
-    dados[sel, c("siape", "nome"), drop = FALSE]
-  })
+    linha <- dados[as.character(dados$siape) == as.character(siape), , drop = FALSE]
+    if (nrow(linha) != 1) NULL else linha
+  }
 
-  observeEvent(servidor_selecionado(), {
-    linha <- servidor_selecionado()
-    updateTextInput(session, "in_servidor_siape", value = linha$siape)
-    updateTextInput(session, "in_servidor_nome", value = linha$nome)
-  })
+  form_servidor <- function(linha = NULL) {
+    showModal(modalDialog(
+      title = if (is.null(linha)) tagList(icon("user-plus"), " Novo servidor")
+              else tagList(icon("pen"), " Editar servidor"),
+      easyClose = TRUE,
+      textInput("in_servidor_siape", "SIAPE", value = linha$siape %||% "", width = "100%"),
+      textInput("in_servidor_nome", "Nome", value = linha$nome %||% "", width = "100%"),
+      div(class = "explicacao", "A senha é definida diretamente no banco de dados e não é exibida aqui."),
+      footer = tagList(
+        if (!is.null(linha)) actionButton("btn_del_servidor", "Remover", icon = icon("trash"),
+                                          class = "btn-remover acao-esquerda"),
+        modalButton("Cancelar"),
+        actionButton("btn_salvar_servidor",
+                     if (is.null(linha)) "Adicionar" else "Salvar alterações",
+                     icon = icon(if (is.null(linha)) "plus" else "floppy-disk"),
+                     class = if (is.null(linha)) "btn-adicionar" else "btn-salvar")
+      )
+    ))
+  }
 
-  observe({
+  observeEvent(input$btn_novo_servidor, {
     req(eh_admin())
-    selecionado <- !is.null(servidor_selecionado())
-    shinyjs::toggleState("btn_edit_servidor", condition = selecionado)
-    shinyjs::toggleState("btn_del_servidor", condition = selecionado)
+    servidor_em_edicao(NULL)
+    form_servidor(NULL)
   })
 
-  observeEvent(input$btn_add_servidor, {
+  observeEvent(input$abrir_servidor, {
     req(eh_admin())
-    siape <- texto_limpo(input$in_servidor_siape)
-    nome <- texto_limpo(input$in_servidor_nome)
-    if (!nzchar(siape) || !nzchar(nome)) {
-      showNotification("Informe o SIAPE e o nome.", type = "warning")
-      return()
-    }
-
-    existe <- dbGetQuery(pool_read, "SELECT COUNT(*) FROM servidores WHERE siape = $1", params = list(siape))
-    if (existe[1, 1] > 0) {
-      showNotification("Este servidor já está cadastrado.", type = "warning")
-      return()
-    }
-
-    ok <- gravar(
-      dbExecute(pool_write, "INSERT INTO servidores (siape, nome) VALUES ($1, $2)", params = list(siape, nome)),
-      "Servidor adicionado."
-    )
-    if (ok) {
-      marcar(admin_refresh)
-      updateTextInput(session, "in_servidor_siape", value = "")
-      updateTextInput(session, "in_servidor_nome", value = "")
-    }
-  })
-
-  servidor_pendente <- reactiveVal(NULL)
-
-  observeEvent(input$btn_edit_servidor, {
-    req(eh_admin())
-    linha <- servidor_selecionado()
+    linha <- buscar_servidor(input$abrir_servidor)
     req(linha)
+    servidor_em_edicao(linha$siape)
+    form_servidor(linha)
+  })
+
+  observeEvent(input$btn_salvar_servidor, {
+    req(eh_admin())
     siape <- texto_limpo(input$in_servidor_siape)
     nome <- texto_limpo(input$in_servidor_nome)
     if (!nzchar(siape) || !nzchar(nome)) {
       showNotification("Informe o SIAPE e o nome.", type = "warning")
       return()
     }
-    servidor_pendente(list(siape_atual = linha$siape, siape = siape, nome = nome))
-    confirm_action(
-      "confirm_edit_servidor",
-      message = paste0("Salvar as alterações no cadastro de ", linha$nome, "?"),
-      label_confirm = "Salvar alterações",
-      class_confirm = "btn-salvar",
-      icon_confirm = icon("floppy-disk")
-    )
-  })
 
-  observeEvent(input$confirm_edit_servidor, {
-    removeModal()
-    req(eh_admin(), servidor_pendente())
-    alvo <- servidor_pendente()
-    servidor_pendente(NULL)
-
-    existe <- dbGetQuery(
-      pool_read,
-      "SELECT COUNT(*) FROM servidores WHERE siape = $1 AND siape != $2",
-      params = list(alvo$siape, alvo$siape_atual)
-    )
-    if (existe[1, 1] > 0) {
+    siape_atual <- servidor_em_edicao()
+    duplicado <- if (is.null(siape_atual)) {
+      dbGetQuery(pool_read, "SELECT COUNT(*) FROM servidores WHERE siape = $1", params = list(siape))
+    } else {
+      dbGetQuery(pool_read, "SELECT COUNT(*) FROM servidores WHERE siape = $1 AND siape != $2",
+                 params = list(siape, siape_atual))
+    }
+    if (duplicado[1, 1] > 0) {
       showNotification("Já existe um servidor com este SIAPE.", type = "warning")
       return()
     }
 
-    ok <- gravar(
-      dbExecute(pool_write, "UPDATE servidores SET siape = $1, nome = $2 WHERE siape = $3",
-                params = list(alvo$siape, alvo$nome, alvo$siape_atual)),
-      "Servidor atualizado."
-    )
+    ok <- if (is.null(siape_atual)) {
+      gravar(
+        dbExecute(pool_write, "INSERT INTO servidores (siape, nome) VALUES ($1, $2)",
+                  params = list(siape, nome)),
+        "Servidor adicionado."
+      )
+    } else {
+      gravar(
+        dbExecute(pool_write, "UPDATE servidores SET siape = $1, nome = $2 WHERE siape = $3",
+                  params = list(siape, nome, siape_atual)),
+        "Servidor atualizado."
+      )
+    }
     if (ok) {
+      removeModal()
+      servidor_em_edicao(NULL)
       marcar(admin_refresh)
       marcar(entregas_refresh)
     }
   })
 
-  observeEvent(input$btn_del_servidor, {
-    req(eh_admin())
-    linha <- servidor_selecionado()
-    req(linha)
+  servidor_pendente <- reactiveVal(NULL)
 
-    entregas <- dbGetQuery(pool_read, "SELECT COUNT(*) FROM entregas WHERE servidor = $1", params = list(linha$siape))
+  pedir_remocao_servidor <- function(linha) {
+    entregas <- dbGetQuery(pool_read, "SELECT COUNT(*) FROM entregas WHERE servidor = $1",
+                           params = list(linha$siape))
     if (entregas[1, 1] > 0) {
-      showNotification("Este servidor possui entregas registradas. Remova as entregas antes de excluir.", type = "error")
+      showNotification("Este servidor possui entregas registradas. Remova as entregas antes de excluir.",
+                       type = "error")
       return()
     }
-    servidor_pendente(list(siape_atual = linha$siape))
+    servidor_pendente(linha$siape)
     confirm_action(
       "confirm_delete_servidor",
-      message = paste0("Remover o servidor ", linha$nome, " (SIAPE ", linha$siape, ")? Esta ação não pode ser desfeita."),
+      message = paste0("Remover o servidor ", linha$nome, " (SIAPE ", linha$siape,
+                       ")? Esta ação não pode ser desfeita."),
       label_confirm = "Remover",
       icon_confirm = icon("trash")
     )
+  }
+
+  observeEvent(input$remover_servidor, {
+    req(eh_admin())
+    linha <- buscar_servidor(input$remover_servidor)
+    req(linha)
+    pedir_remocao_servidor(linha)
+  })
+
+  observeEvent(input$btn_del_servidor, {
+    req(eh_admin(), servidor_em_edicao())
+    linha <- buscar_servidor(servidor_em_edicao())
+    req(linha)
+    pedir_remocao_servidor(linha)
   })
 
   observeEvent(input$confirm_delete_servidor, {
     removeModal()
     req(eh_admin(), servidor_pendente())
-    alvo <- servidor_pendente()
+    siape <- servidor_pendente()
     servidor_pendente(NULL)
+    servidor_em_edicao(NULL)
 
     ok <- gravar(
-      dbExecute(pool_write, "DELETE FROM servidores WHERE siape = $1", params = list(alvo$siape_atual)),
+      dbExecute(pool_write, "DELETE FROM servidores WHERE siape = $1", params = list(siape)),
       "Servidor removido."
     )
-    if (ok) {
-      marcar(admin_refresh)
-      updateTextInput(session, "in_servidor_siape", value = "")
-      updateTextInput(session, "in_servidor_nome", value = "")
-    }
+    if (ok) marcar(admin_refresh)
   })
 }

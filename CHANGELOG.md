@@ -6,6 +6,10 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 ## [Unreleased]
 
 ### Added
+- Lançamentos apresentados como cartões, agrupados por mês com subtotal de horas e entregas. Clicar no cartão abre a janela de edição, com os botões de editar e remover no próprio cartão.
+- Listas de anos do ciclo, atividades e servidores em cartões, com as ações em cada item e formulário em janela, no lugar do formulário fixo acima da tabela.
+- Coluna de esforço dos relatórios exibida como barra proporcional.
+- Idioma português no calendário do seletor de data, que o Shiny não distribui por padrão.
 - Nova identidade visual alinhada ao Croma: paleta azul institucional/verde, painéis, abas, indicadores, tabelas e janelas de confirmação padronizados (`www/css/app.css`).
 - Nova logo do Minhas Entregas e favicon, gerados por `scripts/gerar_logo_app.R` (anel de esforço por atividade, marcações de horas e sinal de entrega concluída).
 - Tela de acesso dedicada: após o login ela é ocultada e o app mostra o nome do servidor e o botão **Sair**.
@@ -14,7 +18,8 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Coluna "Senha configurada" na administração de servidores (a senha em hash deixa de ser exibida).
 
 ### Changed
-- Formulário de lançamentos com modo "Novo lançamento" e "Editando", botões habilitados conforme a seleção e a situação do ano do ciclo.
+- Fim das tabelas DataTables nas telas de manutenção: elas permanecem apenas onde servem para explorar e exportar dados (relatórios, todas as entregas e auditoria), agora com colunas secundárias ocultas em telas estreitas.
+- Ações passam a ficar junto do registro, em vez de um formulário único no topo da página.
 - Relatórios com rótulos em português, nomes dos meses e percentuais com vírgula decimal.
 - Ao criar ou abrir um ano de ciclo, os demais são fechados na mesma transação; a criação de ano passa a ser auditada.
 - `global.R` deixa de ser carregado mais de uma vez (menos conexões abertas com o banco).

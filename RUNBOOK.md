@@ -69,6 +69,7 @@ Após mudanças em código, configuração, identidade do produto ou documentaç
 7. Se a alteração envolver administração, validar também os painéis administrativos.
 8. Confirmar que, após o login, a tela de acesso some e o botão **Sair** encerra a sessão.
 9. Confirmar que um servidor comum vê apenas as próprias entregas e nenhuma aba administrativa.
+10. Confirmar, em tela de celular, que as listas não exigem rolagem lateral e que as janelas de lançamento abrem corretamente.
 
 ## Fluxo recomendado de versionamento
 
