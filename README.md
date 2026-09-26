@@ -65,6 +65,7 @@ endereço de rede, informações de navegador ou qualquer outro dado pessoal. A 
 - `www/css/app.css`: estilos da interface, na mesma identidade visual do Croma.
 - `www/img/`: logo do aplicativo, favicon e logo do rodapé.
 - `scripts/gerar_logo_app.R`: gera a logo e o favicon a partir de cores CIELCH (`Rscript scripts/gerar_logo_app.R`).
+- `scripts/limpar_registros_de_rede.R`: manutenção pontual, descrita no `RUNBOOK.md`.
 - `VERSION`: armazena a versão atual da aplicação.
 - `manifest.json`: descreve o ambiente R para publicação no Posit Connect Cloud.
 - `CHANGELOG.md`: registra o histórico de alterações por versão.
