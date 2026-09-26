@@ -103,7 +103,12 @@ O aplicativo utiliza as seguintes variáveis de ambiente:
 - `DB_USER_READ`
 - `DB_PASSWORD_READ`
 
-Recomenda-se manter essas informações em um arquivo `.Renviron` local, fora do versionamento.
+Recomenda-se manter essas informações em um arquivo `.Renviron` local, fora do versionamento
+(o `.gitignore` já ignora `.Renviron` e `.env`).
+
+Na publicação, as mesmas variáveis são cadastradas nas configurações do conteúdo dentro da plataforma,
+nunca no repositório. O `RUNBOOK.md` detalha o conteúdo de cada variável e onde encontrar os valores
+em uso.
 
 ## Execução local
 

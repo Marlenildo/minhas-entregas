@@ -4,7 +4,9 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 
 ---
 ## [Unreleased]
-- Em desenvolvimento.
+
+### Added
+- Documentação das variáveis de ambiente no `RUNBOOK.md`: conteúdo de cada uma, onde encontrar os valores em uso e como cadastrá-las na plataforma de publicação.
 
 ---
 ## [3.0.2] - 2026-09-26
