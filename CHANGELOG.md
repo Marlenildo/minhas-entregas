@@ -7,6 +7,19 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [3.0.2] - 2026-09-26
+
+### Removed
+- Registro do endereço IP e do navegador (user agent) nos acessos e nas ações administrativas. O sistema passa a guardar apenas o necessário para a finalidade declarada, em linha com o princípio da necessidade da LGPD.
+
+### Changed
+- Aviso de privacidade da tela de acesso: passa a declarar que nenhum endereço de rede ou informação de navegador é guardado, e que do acesso fica registrada apenas a data, a hora e se a tentativa deu certo.
+- Histórico de ações administrativas deixa de exibir a coluna de IP.
+
+### Note
+- As colunas `ip` e `user_agent` continuam existindo em `login_logs` e `audit_logs`, mas não são mais preenchidas. Os valores gravados antes desta versão permanecem no banco e podem ser apagados pelo responsável (ver `RUNBOOK.md`).
+
+---
 ## [3.0.1] - 2026-09-26
 
 ### Added

@@ -35,6 +35,13 @@ Seu objetivo é oferecer uma base confiável para:
 - Uso de pools de conexão separados para leitura e escrita no PostgreSQL.
 - Interface responsiva, adequada ao uso em computador e em celular.
 
+## Dados pessoais
+
+O sistema guarda apenas o nome, o SIAPE e as entregas registradas por cada servidor. Dos acessos fica
+registrado somente o momento e se a tentativa deu certo, para a segurança da conta. Não são coletados
+endereço de rede, informações de navegador ou qualquer outro dado pessoal. A finalidade do tratamento
+é exclusivamente apoiar o servidor na organização das suas entregas e do esforço dedicado a elas.
+
 ## Perfis de acesso
 
 ### Usuário comum
