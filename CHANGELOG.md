@@ -4,7 +4,9 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 
 ---
 ## [Unreleased]
-- Em desenvolvimento.
+
+### Added
+- `scripts/limpar_registros_de_rede.R`: apaga o IP e o navegador gravados por versões anteriores à 3.0.2 em `login_logs` e `audit_logs`, preservando os registros de acesso e de auditoria. O script não faz parte do pacote publicado e não altera a versão do aplicativo.
 
 ---
 ## [3.0.3] - 2026-09-26
