@@ -63,6 +63,15 @@ fluidPage(
         class = "nota-privacidade",
         icon("lock"),
         span("Cada servidor vê e altera apenas as próprias entregas. Seus registros não ficam visíveis para outros servidores.")
+      ),
+      div(
+        class = "aviso-dados",
+        div(class = "aviso-titulo", "Privacidade e finalidade"),
+        tags$ul(
+          tags$li(HTML("Guardamos apenas o seu <b>nome</b>, o seu <b>SIAPE</b> e as <b>entregas que você registra</b>, dentro das atividades definidas pelo gestor da unidade.")),
+          tags$li("Nenhum outro dado pessoal é coletado. Para a segurança do acesso, ficam registrados a data, a hora e o endereço de rede de cada tentativa de login."),
+          tags$li("O sistema serve apenas para ajudar você a organizar suas entregas e o esforço dedicado a elas na unidade.")
+        )
       )
     )
   ),
