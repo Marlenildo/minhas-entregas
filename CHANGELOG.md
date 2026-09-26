@@ -4,6 +4,10 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 
 ---
 ## [Unreleased]
+- Em desenvolvimento.
+
+---
+## [3.0.0] - 2026-09-26
 
 ### Added
 - Aviso de privacidade e finalidade na tela de acesso: quais dados são guardados (nome, SIAPE e as entregas registradas), o registro de acessos mantido por segurança e o propósito do sistema.

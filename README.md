@@ -22,15 +22,18 @@ Seu objetivo é oferecer uma base confiável para:
 
 ## Principais funcionalidades
 
-- Autenticação por SIAPE e senha.
+- Tela de acesso dedicada, com aviso sobre os dados guardados e a finalidade do sistema.
+- Autenticação por SIAPE e senha, com limite de tentativas sem sucesso.
 - Registro, edição e exclusão de entregas pelo próprio usuário, em cartões com ação direta e confirmação.
 - Controle de ano de ciclo com status aberto ou fechado.
 - Restrição de edição em anos fechados.
+- Painel de esforço do mês, com a distribuição das horas por atividade.
 - Relatórios com filtros por ano, mês, servidor e código.
 - Exportação de tabelas em formatos suportados pelo DataTables.
 - Painel administrativo para gerenciar anos, códigos e servidores.
 - Auditoria de ações administrativas sobre anos de ciclo.
 - Uso de pools de conexão separados para leitura e escrita no PostgreSQL.
+- Interface responsiva, adequada ao uso em computador e em celular.
 
 ## Perfis de acesso
 
