@@ -1,7 +1,7 @@
 # Gera a logo do Minhas Entregas (www/img/logo_app.png e www/img/favicon.png).
 # Desenho plano, sem sombras nem degradês: um anel com as fatias de esforço do mês
 # (cores CIELCH, pontas arredondadas) e, ao centro, o sinal de entrega concluída.
-# `escala` ajusta a espessura dos traços ao tamanho da imagem (1 = 512 px).
+# Arcos e sinal têm a mesma espessura; `escala` a ajusta ao tamanho da imagem (1 = 512 px).
 # Uso: Rscript scripts/gerar_logo_app.R
 
 library(colorspace)
@@ -20,8 +20,8 @@ desenhar_logo <- function(escala = 1) {
   par(mar = c(0, 0, 0, 0), bg = "transparent")
   plot.new(); plot.window(c(-1, 1), c(-1, 1), asp = 1)
 
-  espessura <- 46 * escala
-  folga <- 13 * pi / 180
+  espessura <- 70 * escala
+  folga <- 15 * pi / 180
   inicio <- pi / 2
 
   for (i in seq_along(FATIAS)) {
@@ -33,8 +33,8 @@ desenhar_logo <- function(escala = 1) {
   }
 
   # Sinal de entrega concluída, em azul institucional
-  lines(c(-.30, -.08, .33), c(.02, -.21, .25),
-        col = "#173B5B", lwd = 42 * escala, lend = "round", ljoin = "round")
+  lines(c(-.32, -.09, .34), c(.02, -.23, .27),
+        col = "#173B5B", lwd = espessura, lend = "round", ljoin = "round")
 }
 
 tipo <- if (capabilities("aqua")) "quartz" else "cairo"
