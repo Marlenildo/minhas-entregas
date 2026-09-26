@@ -29,18 +29,7 @@ Identificadores legados de infraestrutura podem ser mantidos apenas quando houve
 - R instalado no ambiente.
 - Dependências R do projeto instaladas.
 - Credenciais válidas de acesso ao banco PostgreSQL.
-- Arquivo `.Renviron` local configurado.
-
-## Variáveis de ambiente esperadas
-
-- `DB_NAME`
-- `DB_HOST`
-- `DB_PORT`
-- `PGSSLMODE`
-- `DB_USER_WRITE`
-- `DB_PASSWORD_WRITE`
-- `DB_USER_READ`
-- `DB_PASSWORD_READ`
+- Arquivo `.Renviron` local configurado (ver "Variáveis de ambiente").
 
 ## Inicialização local
 
@@ -114,12 +103,47 @@ UPDATE audit_logs SET ip = NULL, user_agent = NULL;
 Se, no futuro, as colunas não forem mais necessárias, elas podem ser removidas do esquema em uma
 manutenção planejada.
 
+## Variáveis de ambiente
+
+O aplicativo lê oito variáveis, todas em `global.R`:
+
+| Variável | Conteúdo | Exemplo |
+| --- | --- | --- |
+| `DB_NAME` | Nome do banco | `neondb` |
+| `DB_HOST` | Host do PostgreSQL | `ep-xxxx.sa-east-1.aws.neon.tech` |
+| `DB_PORT` | Porta | `5432` |
+| `PGSSLMODE` | Modo de SSL exigido pelo provedor | `require` |
+| `DB_USER_READ` | Usuário com permissão de leitura | — |
+| `DB_PASSWORD_READ` | Senha do usuário de leitura | — |
+| `DB_USER_WRITE` | Usuário com permissão de escrita | — |
+| `DB_PASSWORD_WRITE` | Senha do usuário de escrita | — |
+
+Onde encontrar os valores em uso:
+
+- No ambiente de desenvolvimento, eles estão no `.Renviron` (do projeto ou do usuário). Para abrir o
+  arquivo: `usethis::edit_r_environ()`, ou `file.edit("~/.Renviron")`.
+- Para conferir sem expor senhas, liste apenas os nomes preenchidos:
+
+  ```r
+  nomes <- c("DB_NAME", "DB_HOST", "DB_PORT", "PGSSLMODE",
+             "DB_USER_READ", "DB_PASSWORD_READ", "DB_USER_WRITE", "DB_PASSWORD_WRITE")
+  data.frame(variavel = nomes, definida = nzchar(Sys.getenv(nomes)))
+  ```
+
+- No provedor do banco, a string de conexão tem o formato
+  `postgresql://USUARIO:SENHA@HOST:PORTA/BANCO?sslmode=require`, de onde saem host, porta, banco,
+  usuário e senha. Os usuários de leitura e de escrita são cadastrados separadamente no banco.
+
+Nunca versione esses valores. O `.gitignore` já ignora `.Renviron` e `.env`.
+
 ## Publicação no Posit Connect Cloud
 
 1. Confirmar que a `main` está com a versão a publicar.
 2. Conferir que o `manifest.json` corresponde aos arquivos e pacotes atuais.
 3. Publicar a partir do repositório e da branch `main` em [connect.posit.cloud](https://connect.posit.cloud).
-4. Conferir as variáveis de ambiente do banco cadastradas na plataforma.
+4. Cadastrar as oito variáveis de ambiente na própria plataforma, nas configurações do conteúdo
+   publicado (seção de variáveis de ambiente), uma a uma, com o mesmo nome usado no `.Renviron`.
+   Depois de salvar, reinicie ou republique o conteúdo: as variáveis são lidas na inicialização.
 5. Validar o acesso de um servidor comum e de um administrador após a publicação.
 
 Observações:
