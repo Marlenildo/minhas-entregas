@@ -208,7 +208,7 @@
         "Package": "bcrypt",
         "Type": "Package",
         "Title": "'Blowfish' Key Derivation and Password Hashing",
-        "Version": "1.2.1",
+        "Version": "1.2.0",
         "Authors@R": "c(\n    person(\"Jeroen\", \"Ooms\", role = c(\"aut\", \"cre\"), email = \"jeroenooms@gmail.com\",\n      comment = c(ORCID = \"0000-0002-4035-0289\")),\n    person(\"Damien\", \"Miller\", role = \"cph\", comment = 'blowfish algorithm'),\n    person(\"Niels\", \"Provos\", role = \"cph\", comment = 'py_bcrypt code'))",
         "Description": "Bindings to the 'blowfish' password hashing algorithm\n    <https://www.openbsd.org/papers/bcrypt-paper.pdf> derived from\n    the 'OpenBSD' implementation.",
         "URL": "https://jeroen.r-universe.dev/bcrypt",
@@ -221,7 +221,7 @@
         "Encoding": "UTF-8",
         "Author": "Jeroen Ooms [aut, cre] (<https://orcid.org/0000-0002-4035-0289>),\n  Damien Miller [cph] (blowfish algorithm),\n  Niels Provos [cph] (py_bcrypt code)",
         "Maintainer": "Jeroen Ooms <jeroenooms@gmail.com>",
-        "Built": "R 4.3.3; x86_64-pc-linux-gnu; 2026-09-26 21:11:58 UTC; unix"
+        "Built": "R 4.3.3; x86_64-pc-linux-gnu; 2026-09-26 22:15:30 UTC; unix"
       }
     },
     "bit": {
@@ -1732,7 +1732,7 @@
   },
   "files": {
     "VERSION": {
-      "checksum": "e4338b064f76fa094a4e82bcf0040fe0"
+      "checksum": "1c11e61133774b6e20dca9703a2b9fdf"
     },
     "global.R": {
       "checksum": "87de6c9115f15ca9c589bfdac7523067"
