@@ -7,6 +7,15 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [3.0.1] - 2026-09-26
+
+### Added
+- `manifest.json` para publicação direta no Posit Connect Cloud, com as instruções de publicação no `README.md` e no `RUNBOOK.md`.
+
+### Changed
+- Logo e favicon com traços mais espessos e a mesma espessura nos arcos e no sinal de entrega concluída.
+
+---
 ## [3.0.0] - 2026-09-26
 
 ### Added

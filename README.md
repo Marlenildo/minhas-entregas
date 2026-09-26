@@ -59,6 +59,7 @@ Seu objetivo é oferecer uma base confiável para:
 - `www/img/`: logo do aplicativo, favicon e logo do rodapé.
 - `scripts/gerar_logo_app.R`: gera a logo e o favicon a partir de cores CIELCH (`Rscript scripts/gerar_logo_app.R`).
 - `VERSION`: armazena a versão atual da aplicação.
+- `manifest.json`: descreve o ambiente R para publicação no Posit Connect Cloud.
 - `CHANGELOG.md`: registra o histórico de alterações por versão.
 - `RUNBOOK.md`: reúne procedimentos operacionais, implantação e suporte.
 - `LICENSE`: descreve o regime de proteção jurídica e os direitos autorais do projeto.
@@ -110,6 +111,29 @@ Ou, pelo terminal:
 ```powershell
 Rscript -e "shiny::runApp('.')"
 ```
+
+## Publicação no Posit Connect Cloud
+
+O repositório inclui um `manifest.json`, então o aplicativo pode ser publicado direto do GitHub em
+[connect.posit.cloud](https://connect.posit.cloud) (**Publish → Shiny → repositório `Marlenildo/minhas-entregas`,
+branch `main`**).
+
+Antes da primeira publicação, cadastre as variáveis de ambiente do banco na própria plataforma
+(`DB_NAME`, `DB_HOST`, `DB_PORT`, `PGSSLMODE`, `DB_USER_WRITE`, `DB_PASSWORD_WRITE`, `DB_USER_READ`,
+`DB_PASSWORD_READ`). Elas não ficam no repositório.
+
+Ao adicionar ou atualizar pacotes, regenere o manifesto no ambiente em que o app roda:
+
+```r
+rsconnect::writeManifest(
+  appDir   = ".",
+  appFiles = c("global.R", "ui.R", "server.R", "VERSION",
+               list.files("www", recursive = TRUE, full.names = TRUE))
+)
+```
+
+O manifesto fixa a versão do R e a versão de cada pacote usada na geração. Regenerá-lo na máquina de
+desenvolvimento mantém a publicação alinhada ao ambiente em que o aplicativo foi testado.
 
 ## Banco de dados
 

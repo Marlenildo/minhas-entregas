@@ -91,7 +91,23 @@ Ao preparar uma nova versão:
 4. Confirmar que o repositório está limpo antes do commit final.
 5. Criar commit de release, quando aplicável.
 6. Publicar no remoto.
-7. Executar o procedimento de deploy adotado pelo projeto.
+7. Regenerar o `manifest.json` quando houver mudança de pacotes.
+8. Executar o procedimento de deploy adotado pelo projeto.
+
+## Publicação no Posit Connect Cloud
+
+1. Confirmar que a `main` está com a versão a publicar.
+2. Conferir que o `manifest.json` corresponde aos arquivos e pacotes atuais.
+3. Publicar a partir do repositório e da branch `main` em [connect.posit.cloud](https://connect.posit.cloud).
+4. Conferir as variáveis de ambiente do banco cadastradas na plataforma.
+5. Validar o acesso de um servidor comum e de um administrador após a publicação.
+
+Observações:
+
+- O `manifest.json` fixa a versão do R e as versões dos pacotes do ambiente onde foi gerado. Se a
+  publicação falhar ao instalar alguma dependência, regenere o manifesto na máquina de desenvolvimento
+  com `rsconnect::writeManifest()` e publique novamente.
+- O ambiente de publicação precisa usar UTF-8, pois rótulos e cabeçalhos da interface têm acentos.
 
 ## Verificações operacionais úteis
 
