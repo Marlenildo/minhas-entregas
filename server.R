@@ -34,28 +34,29 @@ function(input, output, session) {
     ))
   }
 
-  # 2.2 Auditoria: try(..., silent = TRUE) garante que a auditoria nunca derruba o app
+  # 2.2 Auditoria das ações administrativas.
+  # Guardamos apenas quem fez, o que fez e sobre qual registro: nada de endereço
+  # de rede ou navegador, para coletar somente o necessário (LGPD, art. 6º, III).
+  # try(..., silent = TRUE) garante que a auditoria nunca derruba o app.
   registrar_auditoria <- function(acao, entidade, referencia = NULL) {
     try({
       dbExecute(
         pool_write,
-        "INSERT INTO audit_logs (usuario, acao, entidade, referencia, ip, user_agent)
-         VALUES ($1, $2, $3, $4, $5, $6)",
-        params = list(
-          usuario(), acao, entidade, referencia,
-          session$request$REMOTE_ADDR, session$request$HTTP_USER_AGENT
-        )
+        "INSERT INTO audit_logs (usuario, acao, entidade, referencia)
+         VALUES ($1, $2, $3, $4)",
+        params = list(usuario(), acao, entidade, referencia)
       )
     }, silent = TRUE)
   }
 
+  # Registro de acesso: SIAPE, momento e se a tentativa deu certo.
   registrar_login <- function(siape, sucesso) {
     try({
       dbExecute(
         pool_write,
-        "INSERT INTO login_logs (siape, momento, sucesso, ip, user_agent)
-         VALUES ($1, now(), $2, $3, $4)",
-        params = list(siape, sucesso, session$request$REMOTE_ADDR, session$request$HTTP_USER_AGENT)
+        "INSERT INTO login_logs (siape, momento, sucesso)
+         VALUES ($1, now(), $2)",
+        params = list(siape, sucesso)
       )
     }, silent = TRUE)
   }
@@ -924,14 +925,14 @@ function(input, output, session) {
     admin_refresh()
     dados <- dbGetQuery(
       pool_read,
-      "SELECT momento, usuario, acao, referencia AS ano, ip
+      "SELECT momento, usuario, acao, referencia AS ano
        FROM audit_logs
        WHERE entidade = 'ano_ciclo'
        ORDER BY momento DESC"
     )
     if (nrow(dados) > 0) dados$momento <- format(as.POSIXct(dados$momento), "%d/%m/%Y %H:%M")
-    names(dados) <- c("Momento", "Usuário", "Ação", "Ano", "IP")[seq_along(dados)]
-    tabela_padrao(dados, selection = "none", pageLength = 10, ocultar_mobile = c("IP", "Usuário"))
+    names(dados) <- c("Momento", "Usuário", "Ação", "Ano")[seq_along(dados)]
+    tabela_padrao(dados, selection = "none", pageLength = 10, ocultar_mobile = "Usuário")
   })
 
   # Ao abrir um ano, os demais são fechados na mesma transação (só um ano aberto)

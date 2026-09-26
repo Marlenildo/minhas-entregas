@@ -69,7 +69,8 @@ fluidPage(
         div(class = "aviso-titulo", "Privacidade e finalidade"),
         tags$ul(
           tags$li(HTML("Guardamos apenas o seu <b>nome</b>, o seu <b>SIAPE</b> e as <b>entregas que você registra</b>, dentro das atividades definidas pelo gestor da unidade.")),
-          tags$li("Nenhum outro dado pessoal é coletado. Para a segurança do acesso, ficam registrados a data, a hora e o endereço de rede de cada tentativa de login."),
+          tags$li("Nenhum outro dado pessoal é coletado. Não guardamos o seu endereço de rede nem informações do seu navegador ou dispositivo."),
+          tags$li("Para a segurança da sua conta, fica registrada a data e a hora de cada tentativa de acesso ao seu SIAPE, com a informação de ter dado certo ou não."),
           tags$li("O sistema serve apenas para ajudar você a organizar suas entregas e o esforço dedicado a elas na unidade.")
         )
       )

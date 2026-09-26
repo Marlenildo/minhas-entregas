@@ -1732,16 +1732,16 @@
   },
   "files": {
     "VERSION": {
-      "checksum": "662f52dba3387be714becad581d0ac87"
+      "checksum": "e4338b064f76fa094a4e82bcf0040fe0"
     },
     "global.R": {
       "checksum": "87de6c9115f15ca9c589bfdac7523067"
     },
     "server.R": {
-      "checksum": "f8bd591eae2bb0c4c243429468b68965"
+      "checksum": "32b14de930bf76f02326156bc84eb678"
     },
     "ui.R": {
-      "checksum": "8a7f9f9976cdad8d44655f62561c8f0d"
+      "checksum": "8336022f34fad03be007f331ab9abe77"
     },
     "www/css/app.css": {
       "checksum": "b433a8916a7ffb2dfe830bf9ee76a838"

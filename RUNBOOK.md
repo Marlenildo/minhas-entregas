@@ -94,6 +94,26 @@ Ao preparar uma nova versão:
 7. Regenerar o `manifest.json` quando houver mudança de pacotes.
 8. Executar o procedimento de deploy adotado pelo projeto.
 
+## Dados pessoais e registros de acesso
+
+O sistema guarda, sobre cada servidor, apenas o **nome**, o **SIAPE** e as **entregas registradas**.
+
+Dos acessos fica registrado somente o SIAPE, o momento e se a tentativa deu certo (`login_logs`).
+Das ações administrativas sobre anos de ciclo ficam registrados o usuário, a ação e o ano (`audit_logs`).
+A partir da versão 3.0.2 o aplicativo **não grava mais endereço IP nem informações do navegador**.
+
+As colunas `ip` e `user_agent` continuam existindo nas duas tabelas por compatibilidade, porém deixam de
+ser preenchidas. Os valores gravados por versões anteriores permanecem no banco. Para eliminá-los,
+o responsável pelo banco pode executar, fora do aplicativo:
+
+```sql
+UPDATE login_logs SET ip = NULL, user_agent = NULL;
+UPDATE audit_logs SET ip = NULL, user_agent = NULL;
+```
+
+Se, no futuro, as colunas não forem mais necessárias, elas podem ser removidas do esquema em uma
+manutenção planejada.
+
 ## Publicação no Posit Connect Cloud
 
 1. Confirmar que a `main` está com a versão a publicar.
