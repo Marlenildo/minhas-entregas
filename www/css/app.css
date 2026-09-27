@@ -35,6 +35,12 @@ h4 { color:var(--navy); font-weight:800; letter-spacing:-.15px; }
 .descricao-app { color:var(--blue); font-size:15px; font-weight:800; margin-top:2px; }
 .subtitulo { color:var(--muted); font-size:14px; margin-top:5px; }
 .area-usuario { margin-left:auto; display:flex; align-items:center; gap:12px; }
+.cabecalho-app .titulo-area { min-width:0; }
+/* Ano do ciclo no cabeçalho: vale para todas as abas */
+.ano-global { display:flex; align-items:flex-end; gap:10px; }
+.ano-global .form-group,.ano-global .shiny-input-container { margin:0; }
+.ano-global .control-label { display:block; margin:0 0 4px; color:var(--muted); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; }
+.ano-global .status-ano { margin-top:0; height:38px; font-size:12.5px; }
 .chip-usuario { display:flex; align-items:center; gap:10px; background:var(--white); border:1px solid var(--line); border-radius:999px; padding:6px 14px 6px 6px; }
 .avatar { width:36px; height:36px; border-radius:50%; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; letter-spacing:.3px; }
 .usuario-nome { color:var(--navy); font-weight:800; font-size:13px; line-height:1.2; max-width:230px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -370,7 +376,10 @@ div.dt-button-background { background:rgba(23,59,91,.18); }
   .titulo-area { padding-left:12px; }
   .titulo { font-size:26px; }
   .subtitulo { display:none; }
-  .area-usuario { margin-left:0; width:100%; justify-content:space-between; }
+  .area-usuario { margin-left:0; width:100%; justify-content:space-between; flex-wrap:wrap; row-gap:14px; }
+  /* No celular o ano ocupa a primeira linha; o chip do usuário desce para a seguinte */
+  .ano-global { width:100%; order:-1; justify-content:flex-start; }
+  .ano-global .status-ano { margin-bottom:0; }
   .usuario-nome { max-width:170px; }
   .painel { padding:18px; }
   .cartao-login { padding:26px 20px 20px; }
