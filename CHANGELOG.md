@@ -7,6 +7,18 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [3.2.0] - 2026-09-27
+
+### Changed
+- **Exportar a tabela completa** passa a ignorar também os filtros de ano, mês, servidor e atividade, baixando todos os registros do relatório. **Exportar o que está filtrado** continua respeitando os filtros e a busca da tabela.
+- O relatório passa a ser montado com todos os registros visíveis ao usuário, e os filtros da tela são aplicados como busca da própria tabela. Com isso, o esforço de cada mês é sempre calculado sobre o mês inteiro: filtrar por uma atividade deixa de exibir 100% para ela.
+- O relatório do administrador ganha a coluna de servidor, e o esforço passa a ser calculado por servidor dentro de cada mês.
+- As tabelas passam a ser processadas no navegador (`server = FALSE`), condição para que busca e exportação enxerguem todos os registros e não apenas a página carregada.
+
+### Fixed
+- Paginação das tabelas: o número da página atual aparecia escuro sobre fundo azul, quase ilegível. Os botões passam a seguir a identidade visual, com a página atual em azul institucional e número branco.
+
+---
 ## [3.1.0] - 2026-09-27
 
 ### Added

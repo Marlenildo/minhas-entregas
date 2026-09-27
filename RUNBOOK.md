@@ -60,6 +60,7 @@ Após mudanças em código, configuração, identidade do produto ou documentaç
 9. Confirmar que um servidor comum vê apenas as próprias entregas e nenhuma aba administrativa.
 10. Confirmar, em tela de celular, que as listas não exigem rolagem lateral e que as janelas de lançamento abrem corretamente.
 11. Baixar um PDF de exportação e conferir cabeçalho, identificação do conteúdo e rodapé.
+12. Conferir que **Exportar a tabela completa** traz mais registros que **Exportar o que está filtrado** quando houver filtros aplicados.
 
 ## Fluxo recomendado de versionamento
 
