@@ -282,6 +282,19 @@ function(input, output, session) {
                 class = "explicacao",
                 "Cada lançamento é um cartão. Clique no cartão para editar ou remover, com confirmação. As alterações só são permitidas enquanto o ano do ciclo estiver aberto."
               ),
+              div(
+                class = "barra-filtros",
+                div(class = "filtro",
+                    selectInput("in_f_mes", "Mês", choices = c("Todos os meses" = "Todos"), width = "100%")),
+                div(class = "filtro filtro-largo",
+                    selectInput("in_f_codigo", "Atividade", choices = c("Todas as atividades" = "Todos"), width = "100%")),
+                div(class = "filtro filtro-chips",
+                    radioButtons("in_f_status", "Situação", inline = TRUE, selected = "Todas",
+                                 choices = c("Todas", "Em andamento", "Concluído"))),
+                div(class = "filtro filtro-acao",
+                    actionButton("btn_limpar_filtros", "Limpar filtros",
+                                 icon = icon("filter-circle-xmark"), class = "btn-neutro"))
+              ),
               uiOutput("out_lista_entregas")
             )
           ),
@@ -368,9 +381,12 @@ function(input, output, session) {
 
 
   # 6. TABELAS ----
-  # `ocultar_mobile`: colunas secundárias, escondidas em telas estreitas pelo CSS
+  # `ocultar_mobile`: colunas secundárias, escondidas em telas estreitas pelo CSS.
+  # `titulo`/`chave`: quando informados, a tabela ganha o menu de exportação.
   tabela_padrao <- function(dados, selection = "single", escape = TRUE, pageLength = 15,
-                            ordem = list(), ocultar_mobile = character(), alinhar_direita = character()) {
+                            ordem = list(), ocultar_mobile = character(), alinhar_direita = character(),
+                            titulo = NULL, chave = "") {
+    indices <- function(nomes) match(intersect(nomes, names(dados)), names(dados)) - 1L
     coluna <- function(nomes) as.list(match(intersect(nomes, names(dados)), names(dados)) - 1L)
     definicoes <- c(
       lapply(coluna(ocultar_mobile), function(i) list(targets = i, className = "ocultar-mobile")),
@@ -384,8 +400,13 @@ function(input, output, session) {
       rownames = FALSE,
       escape = escape,
       options = list(
-        dom = "Blfrtip",
-        buttons = c("copy", "excel", "pdf", "print"),
+        dom = if (is.null(titulo)) "lfrtip" else "Blfrtip",
+        buttons = if (is.null(titulo)) list() else botoes_exportacao(
+          titulo, chave,
+          direita = indices(alinhar_direita),
+          # A coluna mais descritiva fica com a largura flexível no PDF
+          flexivel = indices("Atividade")
+        ),
         pageLength = pageLength,
         order = ordem,
         columnDefs = definicoes,
@@ -403,8 +424,7 @@ function(input, output, session) {
           loadingRecords = "Carregando...",
           zeroRecords = "Nenhum registro encontrado",
           emptyTable = "Nenhum dado disponível na tabela",
-          paginate = list(first = "Primeiro", previous = "Anterior", `next` = "Próximo", last = "Último"),
-          buttons = list(copy = "Copiar", excel = "Excel", pdf = "PDF", print = "Imprimir")
+          paginate = list(first = "Primeiro", previous = "Anterior", `next` = "Próximo", last = "Último")
         )
       )
     )
@@ -519,12 +539,66 @@ function(input, output, session) {
     )
   })
 
+  ## Filtros da lista de lançamentos ----
+  observe({
+    req(eh_servidor())
+    dados <- minhas_entregas()
+
+    meses <- sort(unique(format(as.Date(dados$data), "%m")), decreasing = TRUE)
+    atual_mes <- isolate(input$in_f_mes)
+    updateSelectInput(
+      session, "in_f_mes",
+      choices = c("Todos os meses" = "Todos", setNames(meses, MESES[meses])),
+      selected = if (!is.null(atual_mes) && atual_mes %in% c("Todos", meses)) atual_mes else "Todos"
+    )
+
+    codigos <- sort(unique(dados$codigo))
+    atual_codigo <- isolate(input$in_f_codigo)
+    updateSelectInput(
+      session, "in_f_codigo",
+      choices = c("Todas as atividades" = "Todos", setNames(codigos, codigos)),
+      selected = if (!is.null(atual_codigo) && atual_codigo %in% c("Todos", codigos)) atual_codigo else "Todos"
+    )
+  })
+
+  observeEvent(input$btn_limpar_filtros, {
+    req(eh_servidor())
+    updateSelectInput(session, "in_f_mes", selected = "Todos")
+    updateSelectInput(session, "in_f_codigo", selected = "Todos")
+    updateRadioButtons(session, "in_f_status", selected = "Todas")
+  })
+
+  filtros_ativos <- reactive({
+    ativos <- c(
+      if (!is.null(input$in_f_mes) && input$in_f_mes != "Todos") MESES[[input$in_f_mes]],
+      if (!is.null(input$in_f_codigo) && input$in_f_codigo != "Todos") input$in_f_codigo,
+      if (!is.null(input$in_f_status) && input$in_f_status != "Todas") input$in_f_status
+    )
+    ativos
+  })
+
+  entregas_filtradas <- reactive({
+    dados <- minhas_entregas()
+    if (nrow(dados) == 0) return(dados)
+
+    manter <- rep(TRUE, nrow(dados))
+    if (!is.null(input$in_f_mes) && input$in_f_mes != "Todos")
+      manter <- manter & format(as.Date(dados$data), "%m") == input$in_f_mes
+    if (!is.null(input$in_f_codigo) && input$in_f_codigo != "Todos")
+      manter <- manter & dados$codigo == input$in_f_codigo
+    if (!is.null(input$in_f_status) && input$in_f_status != "Todas")
+      manter <- manter & dados$status == input$in_f_status
+
+    dados[manter, , drop = FALSE]
+  })
+
   ## Lista de lançamentos em cartões ----
   output$out_lista_entregas <- renderUI({
-    dados <- minhas_entregas()
+    todos <- minhas_entregas()
+    dados <- entregas_filtradas()
     aberto <- ano_esta_aberto()
 
-    if (nrow(dados) == 0) {
+    if (nrow(todos) == 0) {
       return(div(
         class = "nenhum-registro",
         paste0("Nenhum lançamento em ", ano_ciclo(), "."),
@@ -532,7 +606,26 @@ function(input, output, session) {
       ))
     }
 
+    if (nrow(dados) == 0) {
+      return(div(
+        class = "nenhum-registro",
+        "Nenhum lançamento corresponde aos filtros escolhidos.",
+        br(), "Use \u201cLimpar filtros\u201d para ver todos os ", nrow(todos), " lançamentos do ano."
+      ))
+    }
+
+    resumo_filtro <- if (length(filtros_ativos()) > 0) {
+      div(
+        class = "resumo-filtro",
+        icon("filter"),
+        sprintf("Mostrando %d de %d lançamentos do ano · %s",
+                nrow(dados), nrow(todos), paste(filtros_ativos(), collapse = " · "))
+      )
+    }
+
     meses <- format(as.Date(dados$data), "%m")
+    tagList(
+    resumo_filtro,
     div(
       class = "lista-entregas",
       lapply(sort(unique(meses), decreasing = TRUE), function(mes) {
@@ -551,7 +644,7 @@ function(input, output, session) {
           lapply(seq_len(nrow(grupo)), function(i) cartao_entrega(grupo[i, , drop = FALSE], aberto))
         )
       })
-    )
+    ))
   })
 
   ## Formulário em janela (mesma janela serve para criar e editar) ----
@@ -801,6 +894,30 @@ function(input, output, session) {
     dados[manter, , drop = FALSE]
   })
 
+  ## Contexto das exportações: identifica no PDF o que está sendo baixado ----
+  observe({
+    req(usuario())
+
+    filtros <- c(
+      if (!is.null(input$in_filtro_ano) && input$in_filtro_ano != "Todos")
+        paste("Ano", input$in_filtro_ano),
+      if (!is.null(input$in_filtro_mes) && input$in_filtro_mes != "Todos")
+        MESES[[input$in_filtro_mes]],
+      if (eh_admin() && !is.null(input$in_filtro_servidor) && input$in_filtro_servidor != "Todos")
+        paste("SIAPE", input$in_filtro_servidor),
+      if (!is.null(input$in_filtro_codigo) && input$in_filtro_codigo != "Todos")
+        input$in_filtro_codigo
+    )
+
+    session$sendCustomMessage("me_contexto", list(
+      servidor = if (eh_admin()) "Administração" else paste0(nome_usuario(), " · SIAPE ", usuario()),
+      versao = APP_VERSION,
+      tabelas = list(
+        relatorio = list(filtros = if (length(filtros)) paste(filtros, collapse = " · ") else NULL)
+      )
+    ))
+  })
+
   output$out_kpis_relatorio <- renderUI({
     dados <- dados_relatorio()
     meses <- length(unique(format(as.Date(dados$data), "%Y-%m")))
@@ -848,7 +965,8 @@ function(input, output, session) {
       check.names = FALSE
     )
     tabela_padrao(exibir, selection = "none", escape = sem_escape(exibir, "Esforço no mês"),
-                  ocultar_mobile = "Entregas", alinhar_direita = c("Entregas", "Horas"))
+                  alinhar_direita = c("Entregas", "Horas"),
+                  titulo = "Relatório de esforço", chave = "relatorio")
   })
 
 
@@ -883,7 +1001,8 @@ function(input, output, session) {
       check.names = FALSE
     )
     tabela_padrao(exibir, selection = "none", escape = sem_escape(exibir, "Situação"),
-                  ocultar_mobile = c("SIAPE", "Entregas"), alinhar_direita = c("Entregas", "Horas"))
+                  ocultar_mobile = "SIAPE", alinhar_direita = c("Entregas", "Horas"),
+                  titulo = "Todas as entregas", chave = "todas")
   })
 
   ## Anos do ciclo ----
@@ -932,7 +1051,8 @@ function(input, output, session) {
     )
     if (nrow(dados) > 0) dados$momento <- format(as.POSIXct(dados$momento), "%d/%m/%Y %H:%M")
     names(dados) <- c("Momento", "Usuário", "Ação", "Ano")[seq_along(dados)]
-    tabela_padrao(dados, selection = "none", pageLength = 10, ocultar_mobile = "Usuário")
+    tabela_padrao(dados, selection = "none", pageLength = 10, ocultar_mobile = "Usuário",
+                  titulo = "Histórico de ações administrativas", chave = "auditoria")
   })
 
   # Ao abrir um ano, os demais são fechados na mesma transação (só um ano aberto)
