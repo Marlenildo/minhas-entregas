@@ -228,7 +228,6 @@ function(input, output, session) {
     req(usuario())
 
     isolate({
-      anos <- anos_disponiveis()
       admin <- eh_admin()
 
       aba_relatorios <- tabPanel(
@@ -242,15 +241,25 @@ function(input, output, session) {
           ),
           p(
             class = "explicacao",
-            if (admin) paste("Soma das entregas de todos os servidores em cada atividade e mês, que é o consolidado usado para alimentar a ferramenta oficial.",
+            if (admin) paste("Soma das entregas de todos os servidores em cada atividade e mês, no ano escolhido no cabeçalho,",
+                             "que é o consolidado usado para alimentar a ferramenta oficial.",
                              "Escolha um servidor no filtro para ver o consolidado apenas dele; o detalhe de cada lançamento fica na aba Todas as entregas.")
-            else "Consolidado das suas entregas. Filtre por ano, mês ou atividade; o esforço mostra a participação de cada atividade nas suas horas do mês."
+            else paste("Consolidado das suas entregas no ano escolhido no cabeçalho.",
+                       "Use \"Todos os anos\" para ver a série completa e filtre por mês ou atividade;",
+                       "o esforço mostra a participação de cada atividade nas suas horas do mês.")
           ),
-          fluidRow(
-            column(3, selectInput("in_filtro_ano", "Ano", choices = "Todos", width = "100%")),
-            column(3, selectInput("in_filtro_mes", "Mês", choices = "Todos", width = "100%")),
-            if (admin) column(3, selectInput("in_filtro_servidor", "Servidor", choices = "Todos", width = "100%")),
-            column(if (admin) 3 else 6, selectInput("in_filtro_codigo", "Atividade", choices = "Todos", width = "100%"))
+          div(
+            class = "barra-filtros",
+            # O ano vem do cabeçalho; aqui só se escolhe olhar um ano ou a série toda
+            div(class = "filtro filtro-chips",
+                radioButtons("in_rel_anos", "Anos", inline = TRUE, selected = "ciclo",
+                             choices = c("Ano do ciclo" = "ciclo", "Todos os anos" = "todos"))),
+            div(class = "filtro",
+                selectInput("in_filtro_mes", "Mês", choices = c("Todos os meses" = "Todos"), width = "100%")),
+            if (admin) div(class = "filtro filtro-largo",
+                           selectInput("in_filtro_servidor", "Servidor", choices = c("Todos os servidores" = "Todos"), width = "100%")),
+            div(class = "filtro filtro-largo",
+                selectInput("in_filtro_codigo", "Atividade", choices = c("Todas as atividades" = "Todos"), width = "100%"))
           ),
           uiOutput("out_kpis_relatorio"),
           DTOutput("out_tabela_relatorio"),
@@ -303,11 +312,8 @@ function(input, output, session) {
               class = "painel painel-azul",
               cabecalho_secao("gauge-high", "Esforço do mês", "Atualiza a cada lançamento"),
               fluidRow(
-                column(3, selectInput("in_ano_ciclo", "Ano do ciclo", choices = anos$ano,
-                                      selected = if (nrow(anos)) ano_padrao(anos), width = "100%")),
-                column(3, selectInput("in_mes_resumo", "Mês", choices = setNames(names(MESES), MESES),
-                                      selected = format(Sys.Date(), "%m"), width = "100%")),
-                column(6, uiOutput("out_status_ano"))
+                column(4, selectInput("in_mes_resumo", "Mês", choices = setNames(names(MESES), MESES),
+                                      selected = format(Sys.Date(), "%m"), width = "100%"))
               ),
               uiOutput("out_kpis_mes"),
               div(class = "titulo-bloco", "Distribuição do esforço por atividade"),
@@ -497,12 +503,26 @@ function(input, output, session) {
     )
   })
 
+  ## Ano do ciclo: um só para toda a sessão, escolhido no cabeçalho ----
+  # Vale para o lançamento, para a matriz mensal e para o relatório, de modo que
+  # as abas não possam discordar sobre o ano em vista.
+  output$out_ano_global <- renderUI({
+    req(usuario())
+    anos <- anos_disponiveis()
+    req(nrow(anos) > 0)
+    atual <- isolate(input$in_ano_ciclo)
+    selectInput(
+      "in_ano_ciclo", "Ano do ciclo", choices = anos$ano, width = "120px",
+      selected = if (!is.null(atual) && atual %in% as.character(anos$ano)) atual else ano_padrao(anos)
+    )
+  })
+
   output$out_status_ano <- renderUI({
-    req(eh_servidor(), input$in_ano_ciclo)
+    req(usuario(), input$in_ano_ciclo)
     if (ano_esta_aberto()) {
-      div(class = "status-ano aberto", icon("lock-open"), "Ano aberto: lançamentos liberados")
+      div(class = "status-ano aberto", icon("lock-open"), paste("Ano", ano_ciclo(), "aberto"))
     } else {
-      div(class = "status-ano fechado", icon("lock"), "Ano fechado: apenas consulta")
+      div(class = "status-ano fechado", icon("lock"), paste("Ano", ano_ciclo(), "fechado"))
     }
   })
 
@@ -964,12 +984,9 @@ function(input, output, session) {
   output$out_mm_status <- renderUI({
     req(eh_servidor(), input$in_ano_ciclo)
     pendentes <- sum(mensais_do_ano()$envio == "rascunho")
-    tagList(
-      if (ano_esta_aberto()) span(class = "status-ano aberto", icon("lock-open"), paste("Ano", ano_ciclo(), "aberto"))
-      else span(class = "status-ano fechado", icon("lock"), paste("Ano", ano_ciclo(), "fechado")),
-      if (pendentes > 0) span(class = "status-ano rascunho", icon("pen-clip"),
-                              paste(pendentes, if (pendentes == 1) "mês em rascunho" else "meses em rascunho"))
-    )
+    if (pendentes == 0) return(NULL)
+    span(class = "status-ano rascunho", icon("pen-clip"),
+         paste(pendentes, if (pendentes == 1) "mês em rascunho" else "meses em rascunho"))
   })
 
   output$out_mm_explicacao <- renderUI({
@@ -1321,37 +1338,50 @@ function(input, output, session) {
   })
 
   # 8. RELATÓRIOS ----
+  # O ano é o do cabeçalho; o relatório apenas escolhe entre olhar esse ano ou a
+  # série completa, porque consultar o histórico não exige um ano definido.
+  ano_do_relatorio <- reactive({
+    if (identical(input$in_rel_anos, "todos")) "Todos" else as.character(ano_ciclo())
+  })
+
   ## Opções dos filtros, preservando a escolha atual ----
-  atualizar_filtro <- function(id, opcoes) {
+  atualizar_filtro <- function(id, opcoes, rotulo = "Todos") {
     atual <- isolate(input[[id]])
-    updateSelectInput(session, id, choices = c("Todos" = "Todos", opcoes),
+    updateSelectInput(session, id, choices = c(setNames("Todos", rotulo), opcoes),
                       selected = if (!is.null(atual) && atual %in% c("Todos", opcoes)) atual else "Todos")
   }
 
   observe({
-    dados <- entregas_visiveis()
-    req(input$in_filtro_ano)
+    req(input$in_rel_anos, input$in_ano_ciclo)
+    dados <- entregas_do_relatorio()
     datas <- as.Date(dados$data)
 
-    atualizar_filtro("in_filtro_ano", sort(unique(format(datas, "%Y")), decreasing = TRUE))
     meses <- sort(unique(format(datas, "%m")))
-    atualizar_filtro("in_filtro_mes", setNames(meses, MESES[meses]))
-    atualizar_filtro("in_filtro_codigo", sort(unique(dados$codigo)))
+    atualizar_filtro("in_filtro_mes", setNames(meses, MESES[meses]), "Todos os meses")
+    atualizar_filtro("in_filtro_codigo", sort(unique(dados$codigo)), "Todas as atividades")
 
     if (eh_admin()) {
       siapes <- sort(unique(as.character(dados$servidor)))
       nomes <- dados$nome_servidor[match(siapes, as.character(dados$servidor))]
-      atualizar_filtro("in_filtro_servidor", setNames(siapes, ifelse(is.na(nomes), siapes, paste0(nomes, " (", siapes, ")"))))
+      atualizar_filtro("in_filtro_servidor", setNames(siapes, ifelse(is.na(nomes), siapes, paste0(nomes, " (", siapes, ")"))),
+                       "Todos os servidores")
     }
   })
 
-  dados_relatorio <- reactive({
+  # Recorte do ano, antes dos demais filtros: é dele que saem as opções de mês,
+  # servidor e atividade, para não oferecer filtro que não devolve nada.
+  entregas_do_relatorio <- reactive({
     dados <- entregas_visiveis()
+    ano <- ano_do_relatorio()
+    if (ano == "Todos" || nrow(dados) == 0) return(dados)
+    dados[format(as.Date(dados$data), "%Y") == ano, , drop = FALSE]
+  })
+
+  dados_relatorio <- reactive({
+    dados <- entregas_do_relatorio()
     datas <- as.Date(dados$data)
     manter <- rep(TRUE, nrow(dados))
 
-    if (!is.null(input$in_filtro_ano) && input$in_filtro_ano != "Todos")
-      manter <- manter & format(datas, "%Y") == input$in_filtro_ano
     if (!is.null(input$in_filtro_mes) && input$in_filtro_mes != "Todos")
       manter <- manter & format(datas, "%m") == input$in_filtro_mes
     if (eh_admin() && !is.null(input$in_filtro_servidor) && input$in_filtro_servidor != "Todos")
@@ -1367,8 +1397,7 @@ function(input, output, session) {
     req(usuario())
 
     filtros <- c(
-      if (!is.null(input$in_filtro_ano) && input$in_filtro_ano != "Todos")
-        paste("Ano", input$in_filtro_ano),
+      if (ano_do_relatorio() == "Todos") "Todos os anos" else paste("Ano", ano_do_relatorio()),
       if (!is.null(input$in_filtro_mes) && input$in_filtro_mes != "Todos")
         MESES[[input$in_filtro_mes]],
       if (!is.null(servidor_do_relatorio())) local({
@@ -1419,7 +1448,7 @@ function(input, output, session) {
   })
 
   resumo_relatorio <- reactive({
-    dados <- entregas_visiveis()
+    dados <- entregas_do_relatorio()
 
     escolhido <- servidor_do_relatorio()
     if (!is.null(escolhido)) {
@@ -1476,13 +1505,12 @@ function(input, output, session) {
     )
     # Colunas de apoio, invisíveis: guardam o valor exato de cada filtro entre
     # barras verticais, para que a busca por um código não alcance outro que o contenha
-    exibir$f_ano <- marca(resumo$ano)
     exibir$f_mes <- marca(resumo$mes)
     exibir$f_codigo <- marca(resumo$codigo)
 
     tabela_padrao(exibir, selection = "none", escape = sem_escape(exibir, "Esforço no mês"),
                   alinhar_direita = c("Entregas", "Horas"),
-                  ocultar = c("f_ano", "f_mes", "f_codigo"),
+                  ocultar = c("f_mes", "f_codigo"),
                   titulo = "Relatório de esforço", chave = "relatorio")
   })
 
@@ -1516,13 +1544,13 @@ function(input, output, session) {
 
   ## Os filtros do topo viram busca por coluna na tabela já montada ----
   observe({
-    req(usuario(), input$in_filtro_ano)
+    req(usuario(), input$in_rel_anos)
     resumo_relatorio()
 
+    # O ano já recorta os dados da tabela; aqui ficam só os filtros de tela
     busca <- function(valor) if (is.null(valor) || valor == "Todos") "" else marca(valor)
     colunas <- c(
       "", "", "", "", "",            # Período, Atividade, Entregas, Horas, Esforço
-      busca(input$in_filtro_ano),
       busca(input$in_filtro_mes),
       busca(input$in_filtro_codigo)
     )

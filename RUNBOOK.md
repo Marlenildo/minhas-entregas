@@ -225,6 +225,7 @@ Observações:
 #### A entrega aparece na tabela, mas não no relatório
 
 - Verificar se o registro foi gravado com o ano esperado.
+- Conferir o ano do ciclo escolhido no cabeçalho: ele recorta o relatório, e "Todos os anos" mostra a série completa.
 - Conferir os filtros ativos da aba de relatórios.
 - Confirmar se a sessão foi atualizada após o CRUD.
 

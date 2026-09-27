@@ -95,6 +95,12 @@ fluidPage(
       ),
       div(
         class = "area-usuario",
+        # O ano do ciclo vale para todas as abas, então o seletor vive no cabeçalho
+        div(
+          class = "ano-global",
+          uiOutput("out_ano_global"),
+          uiOutput("out_status_ano")
+        ),
         uiOutput("out_usuario"),
         actionButton("btn_sair", "Sair", icon = icon("right-from-bracket"), class = "btn-sair")
       )
