@@ -7,6 +7,17 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [3.3.3] - 2026-09-27
+
+### Fixed
+- O relatório do administrador voltava um total por servidor em cada linha, e não a soma do mês. A coluna de servidor foi removida e as linhas passam a somar as entregas e as horas de **todos os servidores** em cada atividade e mês, que é o consolidado usado para alimentar a ferramenta oficial.
+
+### Changed
+- O filtro de servidor no relatório passa a trocar o escopo do consolidado: com "Todos", soma toda a unidade; com um servidor escolhido, soma apenas o dele. Uma etiqueta no cabeçalho informa qual escopo está em vista e o PDF registra o servidor pelo nome.
+- O esforço do mês passa a ser calculado sobre o escopo em vista, e não por servidor dentro do mês.
+- A aba **Todas as entregas** segue mostrando cada lançamento com o servidor responsável, diário ou mensal: é lá que fica o detalhe individual.
+
+---
 ## [3.3.2] - 2026-09-27
 
 ### Added
