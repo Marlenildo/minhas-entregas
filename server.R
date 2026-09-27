@@ -235,10 +235,15 @@ function(input, output, session) {
         tagList(icon("chart-column"), "Relatórios"), value = "Relatórios",
         div(
           class = "painel painel-azul",
-          cabecalho_secao("chart-column", "Relatório de esforço", "Horas e entregas por mês"),
+          div(
+            class = "cabecalho-secao",
+            h4(icon("chart-column"), "Relatório de esforço"),
+            uiOutput("out_escopo_relatorio", inline = TRUE)
+          ),
           p(
             class = "explicacao",
-            if (admin) "Consolidado de todas as entregas registradas. Filtre por ano, mês, servidor ou atividade; o esforço mostra a participação de cada atividade nas horas do mês."
+            if (admin) paste("Soma das entregas de todos os servidores em cada atividade e mês, que é o consolidado usado para alimentar a ferramenta oficial.",
+                             "Escolha um servidor no filtro para ver o consolidado apenas dele; o detalhe de cada lançamento fica na aba Todas as entregas.")
             else "Consolidado das suas entregas. Filtre por ano, mês ou atividade; o esforço mostra a participação de cada atividade nas suas horas do mês."
           ),
           fluidRow(
@@ -1345,8 +1350,11 @@ function(input, output, session) {
         paste("Ano", input$in_filtro_ano),
       if (!is.null(input$in_filtro_mes) && input$in_filtro_mes != "Todos")
         MESES[[input$in_filtro_mes]],
-      if (eh_admin() && !is.null(input$in_filtro_servidor) && input$in_filtro_servidor != "Todos")
-        paste("SIAPE", input$in_filtro_servidor),
+      if (!is.null(servidor_do_relatorio())) local({
+        nomes <- nomes_servidores()
+        nome <- nomes$nome[match(servidor_do_relatorio(), as.character(nomes$siape))]
+        paste("Servidor:", if (is.na(nome)) servidor_do_relatorio() else nome)
+      }),
       if (!is.null(input$in_filtro_codigo) && input$in_filtro_codigo != "Todos")
         input$in_filtro_codigo
     )
@@ -1379,31 +1387,37 @@ function(input, output, session) {
   # do topo são aplicados como busca da própria tabela. Assim o esforço de cada
   # mês é sempre calculado sobre o mês inteiro, e a exportação pode escolher
   # entre o que está filtrado e a tabela completa.
+  # O relatório soma as entregas de todos os servidores em cada atividade e mês:
+  # é esse consolidado que alimenta a ferramenta oficial. O detalhe por servidor
+  # fica na aba "Todas as entregas". Quando o administrador escolhe um servidor no
+  # filtro, o consolidado passa a ser daquele servidor.
+  servidor_do_relatorio <- reactive({
+    if (!eh_admin()) return(NULL)
+    escolhido <- input$in_filtro_servidor
+    if (is.null(escolhido) || escolhido == "Todos") NULL else escolhido
+  })
+
   resumo_relatorio <- reactive({
     dados <- entregas_visiveis()
+
+    escolhido <- servidor_do_relatorio()
+    if (!is.null(escolhido)) {
+      dados <- dados[as.character(dados$servidor) == escolhido, , drop = FALSE]
+    }
     if (nrow(dados) == 0) return(dados[0, , drop = FALSE])
 
     dados$ano <- format(as.Date(dados$data), "%Y")
     dados$mes <- format(as.Date(dados$data), "%m")
-    dados$chave_servidor <- if (eh_admin()) as.character(dados$servidor) else usuario()
 
-    por <- if (eh_admin()) cbind(entregas, horas) ~ chave_servidor + ano + mes + codigo
-           else cbind(entregas, horas) ~ ano + mes + codigo
-    por_mes <- if (eh_admin()) horas ~ chave_servidor + ano + mes else horas ~ ano + mes
+    resumo <- aggregate(cbind(entregas, horas) ~ ano + mes + codigo, data = dados, FUN = sum)
+    total_mes <- aggregate(horas ~ ano + mes, data = dados, FUN = sum)
+    total_entregas <- aggregate(entregas ~ ano + mes, data = dados, FUN = sum)
 
-    resumo <- aggregate(por, data = dados, FUN = sum)
-    total_mes <- aggregate(por_mes, data = dados, FUN = sum)
+    identificar <- function(d) paste(d$ano, d$mes)
+    chave <- identificar(resumo)
 
-    identificar <- function(d) {
-      if (eh_admin()) paste(d$chave_servidor, d$ano, d$mes) else paste(d$ano, d$mes)
-    }
     # Esforço = horas da atividade ÷ horas do mês. Quando o mês não tem horas
     # informadas, o percentual é estimado pela participação nas entregas.
-    total_entregas <- aggregate(
-      if (eh_admin()) entregas ~ chave_servidor + ano + mes else entregas ~ ano + mes,
-      data = dados, FUN = sum
-    )
-    chave <- identificar(resumo)
     total_h <- total_mes$horas[match(chave, identificar(total_mes))]
     total_e <- total_entregas$entregas[match(chave, identificar(total_entregas))]
 
@@ -1414,18 +1428,10 @@ function(input, output, session) {
       ifelse(total_e > 0, round(resumo$entregas / total_e * 100, 1), 0)
     )
 
-    if (eh_admin()) {
-      nomes <- nomes_servidores()
-      resumo$nome_servidor <- nomes$nome[match(resumo$chave_servidor, as.character(nomes$siape))]
-      resumo$nome_servidor <- ifelse(is.na(resumo$nome_servidor), resumo$chave_servidor, resumo$nome_servidor)
-    }
-
     resumo[order(resumo$ano, resumo$mes, -resumo$horas,
                  decreasing = c(TRUE, TRUE, FALSE), method = "radix"), , drop = FALSE]
   })
 
-  # server = FALSE mantém a tabela inteira no navegador: sem isso, a busca e a
-  # exportação enxergariam apenas a página carregada no momento.
   output$out_tabela_relatorio <- renderDT(server = FALSE, {
     resumo <- resumo_relatorio()
 
@@ -1447,19 +1453,28 @@ function(input, output, session) {
       `Esforço no mês` = mapply(barra_percentual, resumo$percentual, cores, resumo$estimado),
       check.names = FALSE
     )
-    if (eh_admin()) exibir <- cbind(Servidor = resumo$nome_servidor, exibir)
-
     # Colunas de apoio, invisíveis: guardam o valor exato de cada filtro entre
     # barras verticais, para que a busca por um código não alcance outro que o contenha
     exibir$f_ano <- marca(resumo$ano)
     exibir$f_mes <- marca(resumo$mes)
     exibir$f_codigo <- marca(resumo$codigo)
-    if (eh_admin()) exibir$f_servidor <- marca(resumo$chave_servidor)
 
     tabela_padrao(exibir, selection = "none", escape = sem_escape(exibir, "Esforço no mês"),
                   alinhar_direita = c("Entregas", "Horas"),
-                  ocultar = c("f_ano", "f_mes", "f_codigo", "f_servidor"),
+                  ocultar = c("f_ano", "f_mes", "f_codigo"),
                   titulo = "Relatório de esforço", chave = "relatorio")
+  })
+
+  output$out_escopo_relatorio <- renderUI({
+    req(usuario())
+    escolhido <- servidor_do_relatorio()
+    if (is.null(escolhido)) {
+      div(class = "tag-secao", if (eh_admin()) "Soma de toda a unidade" else "Horas e entregas por mês")
+    } else {
+      nomes <- nomes_servidores()
+      nome <- nomes$nome[match(escolhido, as.character(nomes$siape))]
+      div(class = "tag-secao tag-verde", paste("Consolidado de", if (is.na(nome)) escolhido else nome))
+    }
   })
 
   # A explicação do asterisco fica visível na tela, e não apenas como dica do mouse
@@ -1485,12 +1500,10 @@ function(input, output, session) {
 
     busca <- function(valor) if (is.null(valor) || valor == "Todos") "" else marca(valor)
     colunas <- c(
-      if (eh_admin()) "",            # Servidor
       "", "", "", "", "",            # Período, Atividade, Entregas, Horas, Esforço
       busca(input$in_filtro_ano),
       busca(input$in_filtro_mes),
-      busca(input$in_filtro_codigo),
-      if (eh_admin()) busca(input$in_filtro_servidor)
+      busca(input$in_filtro_codigo)
     )
     session$sendCustomMessage("me_filtrar_tabela", list(
       id = "out_tabela_relatorio", colunas = as.list(colunas)
