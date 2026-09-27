@@ -364,7 +364,8 @@ function(input, output, session) {
             div(
               class = "painel painel-navy",
               cabecalho_secao("table-list", "Todas as entregas", "Administração"),
-              p(class = "explicacao", "Todas as entregas registradas no sistema, com o nome do servidor responsável."),
+              p(class = "explicacao", paste("Cada lançamento registrado no ano escolhido no cabeçalho, diário ou mensal,",
+                                           "com o nome do servidor responsável. Troque o ano no cabeçalho para ver outro ciclo.")),
               uiOutput("out_kpis_todos"),
               DTOutput("out_tabela_todos")
             )
@@ -1413,7 +1414,8 @@ function(input, output, session) {
       servidor = if (eh_admin()) "Administração" else paste0(nome_usuario(), " · SIAPE ", usuario()),
       versao = APP_VERSION,
       tabelas = list(
-        relatorio = list(filtros = if (length(filtros)) paste(filtros, collapse = " · ") else NULL)
+        relatorio = list(filtros = if (length(filtros)) paste(filtros, collapse = " · ") else NULL),
+        todas = list(filtros = paste("Ano", ano_ciclo()))
       )
     ))
   })
@@ -1486,10 +1488,9 @@ function(input, output, session) {
     resumo <- resumo_relatorio()
 
     if (nrow(resumo) == 0) {
-      return(tabela_padrao(
-        data.frame(Mensagem = "Nenhum lançamento registrado até o momento."),
-        selection = "none"
-      ))
+      vazio <- if (ano_do_relatorio() == "Todos") "Nenhum lançamento registrado até o momento."
+               else paste0("Nenhum lançamento registrado em ", ano_do_relatorio(), ".")
+      return(tabela_padrao(data.frame(Mensagem = vazio), selection = "none"))
     }
 
     # O esforço aparece como barra proporcional, mais legível que o número sozinho
@@ -1564,12 +1565,20 @@ function(input, output, session) {
   # Toda saída e ação administrativa exige eh_admin() no servidor.
 
   ## Todas as entregas ----
-  output$out_kpis_todos <- renderUI({
+  # Segue o ano escolhido no cabeçalho, como as demais abas
+  entregas_todas <- reactive({
     req(eh_admin())
     dados <- entregas_visiveis()
+    if (nrow(dados) == 0) return(dados)
+    dados[format(as.Date(dados$data), "%Y") == as.character(ano_ciclo()), , drop = FALSE]
+  })
+
+  output$out_kpis_todos <- renderUI({
+    req(eh_admin())
+    dados <- entregas_todas()
     div(
       class = "grade-kpi",
-      kpi("Lançamentos", fmt_num(nrow(dados), 0), "em todos os anos", destaque = TRUE),
+      kpi("Lançamentos", fmt_num(nrow(dados), 0), paste("em", ano_ciclo()), destaque = TRUE),
       kpi("Horas registradas", fmt_horas(sum(dados$horas, na.rm = TRUE))),
       kpi("Entregas", fmt_num(sum(dados$entregas, na.rm = TRUE), 0)),
       kpi("Servidores", length(unique(dados$servidor)), "com lançamentos")
@@ -1580,7 +1589,15 @@ function(input, output, session) {
   # exportação enxergariam apenas a página carregada no momento.
   output$out_tabela_todos <- renderDT(server = FALSE, {
     req(eh_admin())
-    dados <- entregas_visiveis()
+    dados <- entregas_todas()
+
+    if (nrow(dados) == 0) {
+      return(tabela_padrao(
+        data.frame(Mensagem = paste0("Nenhum lançamento registrado em ", ano_ciclo(), ".")),
+        selection = "none"
+      ))
+    }
+
     dados <- dados[order(as.Date(dados$data), decreasing = TRUE), , drop = FALSE]
     exibir <- data.frame(
       Data = fmt_data(dados$data),
