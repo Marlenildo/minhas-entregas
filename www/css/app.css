@@ -309,6 +309,9 @@ div.dt-button-background { background:rgba(23,59,91,.18); }
 .mm-legenda { display:none; color:var(--muted); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px; }
 .mm-info { color:var(--muted); font-size:11.5px; text-align:right; font-variant-numeric:tabular-nums; }
 .mm-valor { color:var(--navy); font-size:14px; font-weight:800; text-align:right; font-variant-numeric:tabular-nums; }
+.matriz-mensal.consulta .matriz-cabecalho,.matriz-mensal.consulta .matriz-linha { grid-template-columns:minmax(110px,1fr) minmax(140px,1.1fr) minmax(140px,1.1fr); }
+.matriz-mensal.consulta .mm-valor { text-align:left; font-size:13px; }
+.matriz-mensal.consulta .matriz-linha:not(.preenchida) .mm-valor { color:var(--muted); font-weight:700; }
 .matriz-mensal.somente-leitura .aviso-matriz { border-top:0; border-bottom:1px solid var(--line); }
 .matriz-mensal.somente-leitura .nenhum-registro { border:0; }
 .aviso-matriz { display:flex; align-items:center; gap:8px; padding:11px 14px; border-top:1px solid var(--line); background:var(--red-soft); color:var(--red); font-size:12.5px; font-weight:700; }
@@ -388,6 +391,7 @@ div.dt-button-background { background:rgba(23,59,91,.18); }
   .mm-valor { text-align:left; }
   .matriz-linha .mm-info { grid-column:1 / -1; text-align:left; }
   .matriz-linha .form-control { height:38px; }
+  .matriz-mensal.consulta .matriz-linha { grid-template-columns:1fr 1fr; }
   .mm-legenda { display:block; }
   .resumo-atividade { padding-top:4px; gap:18px; }
   .filtro-chips .radio-inline { flex:1 1 auto; text-align:center; }

@@ -7,6 +7,14 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [3.3.4] - 2026-09-27
+
+### Changed
+- A consulta do lançamento mensal em ano fechado passa a mostrar os dois caminhos de registro, lado a lado em cada mês: o que veio da matriz mensal e o que foi lançado dia a dia. Antes só apareciam os meses com lançamento mensal, e uma atividade registrada apenas no diário parecia vazia.
+- O aviso de ano fechado explica que a consulta reúne os dois caminhos e que o consolidado ao final soma os dois.
+- Em ano fechado, as etiquetas "Rascunho visível só para você" e "Editável a qualquer momento" deixam de aparecer na aba mensal: nada é editável ali, então elas enganavam.
+
+---
 ## [3.3.3] - 2026-09-27
 
 ### Fixed

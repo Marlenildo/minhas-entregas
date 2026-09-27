@@ -1732,19 +1732,19 @@
   },
   "files": {
     "VERSION": {
-      "checksum": "6879fe7a439a332953b1a76df3c429ae"
+      "checksum": "ebc4c999455d45f0f3f4e50c89a2e5dd"
     },
     "global.R": {
       "checksum": "f424e49e82feb2d6a4b366afbddb9d63"
     },
     "server.R": {
-      "checksum": "19b04d215c8a56c581636ec78a978f49"
+      "checksum": "a81d3069426cb356e40dcda0852f03c5"
     },
     "ui.R": {
       "checksum": "abf6b4f0d42266f717daec44b0a26909"
     },
     "www/css/app.css": {
-      "checksum": "167ee6289fadc7c241db0e80ff57f692"
+      "checksum": "f3a4de80a17b5caf00f7e8a7082617e3"
     },
     "www/img/favicon.png": {
       "checksum": "387b99a0e83c1de9adef266fbaef638c"

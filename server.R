@@ -267,8 +267,7 @@ function(input, output, session) {
             h4(icon("table-cells"), "Lançamento mensal"),
             div(
               class = "acoes-secao",
-              div(class = "tag-secao tag-verde", "Rascunho visível só para você"),
-              div(class = "tag-secao", "Editável a qualquer momento"),
+              uiOutput("out_mm_tags", inline = TRUE),
               uiOutput("out_mm_status", inline = TRUE)
             )
           ),
@@ -952,6 +951,16 @@ function(input, output, session) {
                       selected = if (!is.null(atual) && atual %in% opcoes) atual else opcoes[1])
   })
 
+  # Em ano fechado nada é editável: as tags da matriz sairiam enganosas
+  output$out_mm_tags <- renderUI({
+    req(eh_servidor(), input$in_ano_ciclo)
+    if (!ano_esta_aberto()) return(NULL)
+    tagList(
+      div(class = "tag-secao tag-verde", "Rascunho visível só para você"),
+      div(class = "tag-secao", "Editável a qualquer momento")
+    )
+  })
+
   output$out_mm_status <- renderUI({
     req(eh_servidor(), input$in_ano_ciclo)
     pendentes <- sum(mensais_do_ano()$envio == "rascunho")
@@ -974,8 +983,9 @@ function(input, output, session) {
               "Nada fica travado: você pode voltar aqui e alterar qualquer mês quando quiser,",
               "inclusive depois de enviar, e o gestor passa a ver a versão atual.")
       else
-        paste0("O ano ", ano_ciclo(), " está fechado. Os lançamentos ficam disponíveis para consulta, ",
-               "e o consolidado abaixo continua somando o lançamento diário e o mensal.")
+        paste0("O ano ", ano_ciclo(), " está fechado. A consulta abaixo mostra, mês a mês, o que foi ",
+               "registrado nesta atividade pelos dois caminhos: pela matriz mensal e no lançamento ",
+               "diário. O consolidado ao final soma os dois.")
     )
   })
 
@@ -999,11 +1009,21 @@ function(input, output, session) {
       if (nrow(linhas) == 0) NULL else sum(linhas[[coluna]], na.rm = TRUE)
     }
 
-    # Ano fechado: nada de campos nem botões, apenas o que já está registrado
+    # Ano fechado: nada de campos nem botões, apenas o que já está registrado.
+    # A consulta reúne os dois caminhos de lançamento, mês a mês, como no consolidado.
     if (!aberto) {
-      registrados <- mensais[order(as.Date(mensais$data)), , drop = FALSE]
+      texto_valores <- function(ent, hrs) {
+        if (is.null(ent) && is.null(hrs)) return("—")
+        paste0(fmt_num(ent %||% 0, 0), if (isTRUE((ent %||% 0) == 1)) " entrega · " else " entregas · ",
+               fmt_horas(hrs %||% 0))
+      }
+      meses_com_registro <- sort(unique(c(
+        format(as.Date(mensais$data), "%m"),
+        format(as.Date(diarias$data), "%m")
+      )))
+
       return(div(
-        class = "matriz-mensal somente-leitura",
+        class = "matriz-mensal somente-leitura consulta",
         div(class = "aviso-matriz", icon("lock"),
             paste0("Ano ", ano_ciclo(), " fechado: os lançamentos podem ser consultados, mas não alterados.",
                    local({
@@ -1013,25 +1033,26 @@ function(input, output, session) {
                        sprintf(" Restaram %d meses em rascunho, que não chegaram ao gestor.", rascunhos)
                      else ""
                    }))),
-        if (nrow(registrados) == 0) {
-          div(class = "nenhum-registro", "Nenhum lançamento mensal nesta atividade.")
+        if (length(meses_com_registro) == 0) {
+          div(class = "nenhum-registro", "Nenhum lançamento nesta atividade, nem mensal nem diário.")
         } else {
           tagList(
             div(class = "matriz-cabecalho",
-                span("Mês"), span("Entregas"), span("Horas"), span(class = "mm-info", "Já lançado no diário")),
-            lapply(seq_len(nrow(registrados)), function(i) {
-              mes <- format(as.Date(registrados$data[i]), "%m")
+                span("Mês"), span("Lançamento mensal"), span("Lançamento diário")),
+            lapply(meses_com_registro, function(mes) {
+              m_ent <- valor_mes(mensais, mes, "entregas")
+              m_hrs <- valor_mes(mensais, mes, "horas")
               d_ent <- valor_mes(diarias, mes, "entregas")
               d_hrs <- valor_mes(diarias, mes, "horas")
               div(
-                class = "matriz-linha preenchida",
+                class = paste("matriz-linha", if (!is.null(m_ent)) "preenchida"),
                 div(class = "mm-rotulo", MESES[[mes]]),
-                div(class = "mm-valor", fmt_num(registrados$entregas[i], 0)),
-                div(class = "mm-valor", fmt_horas(registrados$horas[i])),
-                div(class = "mm-info",
-                    if (!is.null(d_ent)) sprintf("%s %s · %s", fmt_num(d_ent, 0),
-                                                 if (isTRUE(d_ent == 1)) "entrega" else "entregas",
-                                                 fmt_horas(d_hrs %||% 0)) else "—")
+                div(class = "mm-campo",
+                    span(class = "mm-legenda", "Lançamento mensal"),
+                    div(class = "mm-valor", texto_valores(m_ent, m_hrs))),
+                div(class = "mm-campo",
+                    span(class = "mm-legenda", "Lançamento diário"),
+                    div(class = "mm-valor", texto_valores(d_ent, d_hrs)))
               )
             })
           )
