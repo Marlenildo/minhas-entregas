@@ -28,8 +28,9 @@ Seu objetivo é oferecer uma base confiável para:
 - Controle de ano de ciclo com status aberto ou fechado.
 - Restrição de edição em anos fechados.
 - Painel de esforço do mês, com a distribuição das horas por atividade.
+- Filtros de mês, atividade e situação na lista de lançamentos.
 - Relatórios com filtros por ano, mês, servidor e código.
-- Exportação de tabelas em formatos suportados pelo DataTables.
+- Exportação das tabelas em PDF, Excel e CSV, com escolha entre os registros filtrados e a tabela completa. O PDF sai com cabeçalho, identificação do conteúdo e rodapé com data e hora da emissão.
 - Painel administrativo para gerenciar anos, códigos e servidores.
 - Auditoria de ações administrativas sobre anos de ciclo.
 - Uso de pools de conexão separados para leitura e escrita no PostgreSQL.
@@ -64,6 +65,7 @@ endereço de rede, informações de navegador ou qualquer outro dado pessoal. A 
 - `global.R`: carrega a versão do aplicativo e configura os pools de conexão.
 - `www/css/app.css`: estilos da interface, na mesma identidade visual do Croma.
 - `www/img/`: logo do aplicativo, favicon e logo do rodapé.
+- `www/js/exportacao.js`: montagem do PDF de exportação e utilidades das tabelas.
 - `scripts/gerar_logo_app.R`: gera a logo e o favicon a partir de cores CIELCH (`Rscript scripts/gerar_logo_app.R`).
 - `scripts/limpar_registros_de_rede.R`: manutenção pontual, descrita no `RUNBOOK.md`.
 - `VERSION`: armazena a versão atual da aplicação.

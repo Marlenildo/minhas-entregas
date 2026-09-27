@@ -196,6 +196,91 @@ barra_percentual <- function(percentual, cor = "#2A5C92") {
   )
 }
 
+# -------------------------------
+# Exportação das tabelas
+# -------------------------------
+
+# A logo viaja embutida no PDF, gerado no navegador pelo pdfmake
+LOGO_PDF <- tryCatch(
+  base64enc::dataURI(file = "www/img/logo_app.png", mime = "image/png"),
+  error = function(e) NULL
+)
+
+# As bibliotecas de exportação só são incluídas automaticamente pelo DT quando os
+# botões são declarados de forma simples; com a configuração detalhada abaixo,
+# elas precisam ser anexadas à página.
+dependencias_exportacao <- function() {
+  pasta <- system.file("htmlwidgets/lib/datatables-extensions/Buttons/js", package = "DT")
+  if (!nzchar(pasta)) return(NULL)
+  versao <- as.character(utils::packageVersion("DT"))
+  list(
+    htmltools::htmlDependency("jszip", versao, src = c(file = pasta), script = "jszip.min.js"),
+    htmltools::htmlDependency("pdfmake", versao, src = c(file = pasta),
+                              script = c("pdfmake.js", "vfs_fonts.js"))
+  )
+}
+
+js_txt <- function(x) {
+  escapado <- gsub("\\", "\\\\", x, fixed = TRUE)
+  paste0('"', gsub('"', '\\"', escapado, fixed = TRUE), '"')
+}
+
+# Menu de exportação: cada formato pode sair com o que está filtrado ou com a
+# tabela inteira. `chave` liga a tabela ao texto de filtros enviado pelo servidor.
+botoes_exportacao <- function(titulo, chave, direita = integer(), flexivel = integer()) {
+  sem_marcacao <- list(
+    body = JS("function(d) { return meTexto(d); }"),
+    header = JS("function(d) { return meTexto(d); }")
+  )
+  opcoes <- function(filtrado) list(
+    modifier = list(search = if (filtrado) "applied" else "none", order = "applied", page = "all"),
+    format = sem_marcacao
+  )
+  # Esta versão do Buttons deriva o nome do arquivo do título, então ele carrega
+  # o nome do sistema, o da tabela e a data da exportação.
+  nome_arquivo <- paste("Minhas Entregas -", titulo, "-", format(Sys.Date(), "%d-%m-%Y"))
+  lista_js <- function(x) paste0("[", paste(as.integer(x), collapse = ", "), "]")
+  escopo <- function(filtrado) if (filtrado) "Somente os registros filtrados" else "Tabela completa"
+
+  botao <- function(tipo, rotulo, filtrado, extra = list()) {
+    c(list(
+      extend = tipo, text = rotulo, title = nome_arquivo,
+      exportOptions = opcoes(filtrado)
+    ), extra)
+  }
+  pdf <- function(rotulo, filtrado) botao("pdfHtml5", rotulo, filtrado, list(
+    pageSize = "A4", orientation = "portrait",
+    customize = JS(sprintf(
+      "function(doc) { mePdf(doc, { titulo: %s, escopo: %s, chave: %s, direita: %s, flexivel: %s }); }",
+      js_txt(titulo), js_txt(escopo(filtrado)), js_txt(chave), lista_js(direita), lista_js(flexivel)
+    ))
+  ))
+
+  list(
+    list(
+      extend = "collection", className = "btn-exportar",
+      text = "<i class=\"fa fa-file-arrow-down\"></i> Exportar o que está filtrado",
+      buttons = list(
+        pdf("PDF", TRUE),
+        botao("excelHtml5", "Excel", TRUE),
+        botao("csvHtml5", "CSV", TRUE),
+        botao("copyHtml5", "Copiar", TRUE)
+      )
+    ),
+    list(
+      extend = "collection", className = "btn-exportar btn-exportar-tudo",
+      text = "<i class=\"fa fa-database\"></i> Exportar a tabela completa",
+      buttons = list(
+        pdf("PDF", FALSE),
+        botao("excelHtml5", "Excel", FALSE),
+        botao("csvHtml5", "CSV", FALSE)
+      )
+    ),
+    list(extend = "print", text = "<i class=\"fa fa-print\"></i> Imprimir", className = "btn-exportar",
+         title = nome_arquivo, exportOptions = opcoes(TRUE))
+  )
+}
+
 kpi <- function(rotulo, valor, detalhe = NULL, destaque = FALSE) {
   div(
     class = paste("kpi", if (destaque) "kpi-destaque"),

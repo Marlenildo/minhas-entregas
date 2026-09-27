@@ -21,7 +21,7 @@ desenhar_logo <- function(escala = 1) {
   plot.new(); plot.window(c(-1, 1), c(-1, 1), asp = 1)
 
   espessura <- 70 * escala
-  folga <- 15 * pi / 180
+  folga <- 22 * pi / 180
   inicio <- pi / 2
 
   for (i in seq_along(FATIAS)) {
