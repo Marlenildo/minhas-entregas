@@ -130,6 +130,26 @@ window.mePdf = function (doc, opcoes) {
     ]
   });
 
+  // Se alguma linha saiu estimada, a explicação do asterisco vai junto no PDF
+  var textoDaCelula = function (celula) {
+    if (typeof celula === "string") return celula;
+    return celula && typeof celula.text === "string" ? celula.text : "";
+  };
+  var temEstimado = tabela && tabela.table && tabela.table.body.some(function (linha, i) {
+    return i > 0 && linha.some(function (celula) {
+      return textoDaCelula(celula).indexOf("%*") !== -1;
+    });
+  });
+
+  if (temEstimado) {
+    doc.content.push({
+      margin: [0, 10, 0, 0],
+      text: "* Esforço estimado pela quantidade de entregas, porque o mês não tem horas informadas.",
+      fontSize: 7.5,
+      color: SUAVE
+    });
+  }
+
   doc.header = function (pagina, paginas) {
     var marca = [];
     if (window.ME_LOGO) marca.push({ image: window.ME_LOGO, width: 30 });

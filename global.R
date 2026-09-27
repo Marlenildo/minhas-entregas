@@ -269,6 +269,9 @@ botoes_exportacao <- function(titulo, chave, direita = integer(), flexivel = int
     header = JS("function(d) { return meTexto(d); }")
   )
   opcoes <- function(filtrado) list(
+    # ":visible" impede que as colunas de apoio, usadas apenas como chave de
+    # filtro, apareçam no PDF, no Excel ou no CSV
+    columns = ":visible",
     modifier = list(search = if (filtrado) "applied" else "none", order = "applied", page = "all"),
     format = sem_marcacao
   )

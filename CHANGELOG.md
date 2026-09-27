@@ -7,6 +7,16 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [3.3.2] - 2026-09-27
+
+### Added
+- Textos deixam claro que o lançamento pode ser alterado a qualquer momento, inclusive depois de enviado ao gestor: etiqueta "Editável a qualquer momento" na aba mensal, orientação na tela e aviso na mensagem de envio.
+- Legenda visível abaixo da tabela de relatórios explicando o asterisco do esforço estimado, que antes só aparecia como dica ao passar o mouse e ficava invisível no celular. A mesma explicação passa a sair no PDF quando alguma linha exportada está estimada.
+
+### Fixed
+- As colunas de apoio usadas para filtrar a tabela (ano, mês, atividade e servidor) estavam saindo no PDF, no Excel e no CSV. A exportação passa a considerar apenas as colunas visíveis.
+
+---
 ## [3.3.1] - 2026-09-27
 
 ### Changed
