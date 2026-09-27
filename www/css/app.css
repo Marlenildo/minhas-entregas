@@ -304,6 +304,9 @@ div.dt-button-background { background:rgba(23,59,91,.18); }
 .mm-rotulo { color:var(--navy); font-size:13px; font-weight:800; }
 .mm-legenda { display:none; color:var(--muted); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px; }
 .mm-info { color:var(--muted); font-size:11.5px; text-align:right; font-variant-numeric:tabular-nums; }
+.mm-valor { color:var(--navy); font-size:14px; font-weight:800; text-align:right; font-variant-numeric:tabular-nums; }
+.matriz-mensal.somente-leitura .aviso-matriz { border-top:0; border-bottom:1px solid var(--line); }
+.matriz-mensal.somente-leitura .nenhum-registro { border:0; }
 .aviso-matriz { display:flex; align-items:center; gap:8px; padding:11px 14px; border-top:1px solid var(--line); background:var(--red-soft); color:var(--red); font-size:12.5px; font-weight:700; }
 .aviso-estimado { display:flex; align-items:center; gap:8px; margin:0 0 12px; padding:9px 12px; background:var(--amber-soft); border:1px solid #f0dc9a; border-radius:8px; color:#6b5200; font-size:12.5px; }
 .aviso-estimado .fa { color:var(--amber); }
@@ -378,6 +381,7 @@ div.dt-button-background { background:rgba(23,59,91,.18); }
   .matriz-cabecalho { display:none; }
   .matriz-linha { grid-template-columns:1fr 1fr; gap:6px 10px; padding:12px; }
   .matriz-linha .mm-rotulo { grid-column:1 / -1; }
+  .mm-valor { text-align:left; }
   .matriz-linha .mm-info { grid-column:1 / -1; text-align:left; }
   .matriz-linha .form-control { height:38px; }
   .mm-legenda { display:block; }
