@@ -141,6 +141,7 @@ banco podem acontecer em qualquer ordem.
 Regras do recurso:
 
 - Mês em branco não registra nada; zero não é aceito.
+- Com o ano fechado, os campos e os botões não aparecem: a aba fica em modo de consulta.
 - O que é digitado nasce como **rascunho**, visível apenas para o servidor.
 - **Enviar ao gestor** envia todos os rascunhos do ano; depois disso o registro continua editável e o
   administrador vê a versão atual.

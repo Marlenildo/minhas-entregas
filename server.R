@@ -265,18 +265,14 @@ function(input, output, session) {
               uiOutput("out_mm_status", inline = TRUE)
             )
           ),
-          p(
-            class = "explicacao",
-            "Escolha uma atividade e informe, de uma vez, as entregas e as horas de cada mês do ano. ",
-            "Deixe em branco os meses sem entrega: em branco não registra nada. ",
-            "Guarde quantas atividades quiser e, quando terminar, envie tudo ao gestor."
-          ),
+          uiOutput("out_mm_explicacao"),
           fluidRow(
             column(4, selectInput("in_mm_codigo", "Atividade", choices = NULL, width = "100%")),
             column(8, uiOutput("out_mm_resumo_atividade"))
           ),
           uiOutput("out_mm_matriz"),
           div(
+            id = "acoes_mensais",
             class = "barra-acoes",
             actionButton("btn_mm_guardar", "Guardar rascunho", icon = icon("floppy-disk"), class = "btn-salvar"),
             actionButton("btn_mm_enviar", "Enviar ao gestor", icon = icon("paper-plane"), class = "btn-adicionar"),
@@ -521,7 +517,7 @@ function(input, output, session) {
 
   observe({
     req(eh_servidor(), input$in_ano_ciclo)
-    shinyjs::toggleState("btn_novo", condition = ano_esta_aberto())
+    shinyjs::toggle("btn_novo", condition = ano_esta_aberto())
   })
 
   entregas_do_mes <- reactive({
@@ -960,6 +956,20 @@ function(input, output, session) {
     )
   })
 
+  output$out_mm_explicacao <- renderUI({
+    req(eh_servidor(), input$in_ano_ciclo)
+    p(
+      class = "explicacao",
+      if (ano_esta_aberto())
+        paste("Escolha uma atividade e informe, de uma vez, as entregas e as horas de cada mês do ano.",
+              "Deixe em branco os meses sem entrega: em branco não registra nada.",
+              "Guarde quantas atividades quiser e, quando terminar, envie tudo ao gestor.")
+      else
+        paste0("O ano ", ano_ciclo(), " está fechado. Os lançamentos ficam disponíveis para consulta, ",
+               "e o consolidado abaixo continua somando o lançamento diário e o mensal.")
+    )
+  })
+
   ## Matriz de meses da atividade escolhida ----
   matriz_recarregar <- reactiveVal(0L)
 
@@ -978,6 +988,46 @@ function(input, output, session) {
       if (nrow(dados) == 0) return(NULL)
       linhas <- dados[format(as.Date(dados$data), "%m") == mes, , drop = FALSE]
       if (nrow(linhas) == 0) NULL else sum(linhas[[coluna]], na.rm = TRUE)
+    }
+
+    # Ano fechado: nada de campos nem botões, apenas o que já está registrado
+    if (!aberto) {
+      registrados <- mensais[order(as.Date(mensais$data)), , drop = FALSE]
+      return(div(
+        class = "matriz-mensal somente-leitura",
+        div(class = "aviso-matriz", icon("lock"),
+            paste0("Ano ", ano_ciclo(), " fechado: os lançamentos podem ser consultados, mas não alterados.",
+                   local({
+                     rascunhos <- sum(mensais_do_ano()$envio == "rascunho")
+                     if (rascunhos == 1) " Restou 1 mês em rascunho, que não chegou ao gestor."
+                     else if (rascunhos > 1)
+                       sprintf(" Restaram %d meses em rascunho, que não chegaram ao gestor.", rascunhos)
+                     else ""
+                   }))),
+        if (nrow(registrados) == 0) {
+          div(class = "nenhum-registro", "Nenhum lançamento mensal nesta atividade.")
+        } else {
+          tagList(
+            div(class = "matriz-cabecalho",
+                span("Mês"), span("Entregas"), span("Horas"), span(class = "mm-info", "Já lançado no diário")),
+            lapply(seq_len(nrow(registrados)), function(i) {
+              mes <- format(as.Date(registrados$data[i]), "%m")
+              d_ent <- valor_mes(diarias, mes, "entregas")
+              d_hrs <- valor_mes(diarias, mes, "horas")
+              div(
+                class = "matriz-linha preenchida",
+                div(class = "mm-rotulo", MESES[[mes]]),
+                div(class = "mm-valor", fmt_num(registrados$entregas[i], 0)),
+                div(class = "mm-valor", fmt_horas(registrados$horas[i])),
+                div(class = "mm-info",
+                    if (!is.null(d_ent)) sprintf("%s %s · %s", fmt_num(d_ent, 0),
+                                                 if (isTRUE(d_ent == 1)) "entrega" else "entregas",
+                                                 fmt_horas(d_hrs %||% 0)) else "—")
+              )
+            })
+          )
+        }
+      ))
     }
 
     div(
@@ -1006,20 +1056,13 @@ function(input, output, session) {
                                           if (isTRUE(d_ent == 1)) "entrega" else "entregas",
                                           fmt_horas(d_hrs %||% 0)) else "—")
         )
-      }),
-      if (!aberto) div(class = "aviso-matriz", icon("lock"),
-                       "Ano fechado: a matriz está apenas para consulta.")
+      })
     )
   })
 
   observe({
     req(eh_servidor(), ESQUEMA_MENSAL, input$in_ano_ciclo)
-    aberto <- ano_esta_aberto()
-    for (mes in names(MESES)) {
-      shinyjs::toggleState(paste0("mm_ent_", mes), condition = aberto)
-      shinyjs::toggleState(paste0("mm_hrs_", mes), condition = aberto)
-    }
-    for (botao in c("btn_mm_guardar", "btn_mm_enviar")) shinyjs::toggleState(botao, condition = aberto)
+    shinyjs::toggle("acoes_mensais", condition = ano_esta_aberto())
   })
 
   output$out_mm_resumo_atividade <- renderUI({
