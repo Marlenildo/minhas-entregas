@@ -46,6 +46,21 @@ onStop(function() {
 })
 
 # -------------------------------
+# Recursos disponíveis no banco
+# -------------------------------
+# O lançamento mensal depende das colunas criadas por
+# scripts/migrar_lancamento_mensal.R. Enquanto elas não existirem, a aba não
+# aparece e o restante do aplicativo funciona normalmente.
+ESQUEMA_MENSAL <- tryCatch({
+  colunas <- DBI::dbGetQuery(
+    pool_read,
+    "SELECT column_name FROM information_schema.columns
+      WHERE table_name = 'entregas' AND column_name IN ('origem', 'envio')"
+  )
+  nrow(colunas) == 2
+}, error = function(e) FALSE)
+
+# -------------------------------
 # Identidade visual e formatação
 # -------------------------------
 `%||%` <- function(x, y) if (is.null(x) || length(x) == 0) y else x
@@ -82,6 +97,17 @@ selo_status <- function(status) {
   sprintf('<span class="selo-status %s">%s</span>', classe, htmltools::htmlEscape(status))
 }
 
+selo_origem <- function(origem, envio) {
+  selos <- character()
+  if (identical(origem, "mensal")) {
+    selos <- c(selos, '<span class="selo-status selo-mensal">Mensal</span>')
+  }
+  if (identical(envio, "rascunho")) {
+    selos <- c(selos, '<span class="selo-status selo-rascunho">Rascunho</span>')
+  }
+  paste(selos, collapse = " ")
+}
+
 selo_ano <- function(status) {
   aberto <- status == "aberto"
   sprintf('<span class="selo-status %s">%s</span>',
@@ -93,6 +119,7 @@ selo_ano <- function(status) {
 # O clique é enviado ao servidor por id, que confere o dono do registro antes de qualquer ação.
 cartao_entrega <- function(linha, editavel) {
   data <- as.Date(linha$data)
+  mensal <- identical(linha$origem %||% "diario", "mensal")
   partes <- strsplit(as.character(linha$codigo), "-", fixed = TRUE)[[1]]
   codigo <- trimws(partes[1])
   descricao <- trimws(paste(partes[-1], collapse = "-"))
@@ -114,9 +141,10 @@ cartao_entrega <- function(linha, editavel) {
       evento("abrir_entrega")
     ),
     div(
-      class = "cartao-dia",
-      span(class = "dia", format(data, "%d")),
-      span(class = "mes", toupper(substr(MESES[[format(data, "%m")]], 1, 3)))
+      class = paste("cartao-dia", if (mensal) "cartao-dia-mensal"),
+      # O lançamento mensal não tem dia: o bloco mostra o mês e o ano
+      span(class = "dia", if (mensal) toupper(substr(MESES[[format(data, "%m")]], 1, 3)) else format(data, "%d")),
+      span(class = "mes", if (mensal) format(data, "%Y") else toupper(substr(MESES[[format(data, "%m")]], 1, 3)))
     ),
     div(
       class = "cartao-info",
@@ -125,7 +153,9 @@ cartao_entrega <- function(linha, editavel) {
           span(class = "cartao-descricao", descricao)),
       div(class = "cartao-meta",
           HTML(selo_status(linha$status)),
-          span(class = "cartao-data", fmt_data(data)))
+          HTML(selo_origem(linha$origem %||% "diario", linha$envio %||% "enviado")),
+          span(class = "cartao-data",
+               if (mensal) paste("Mês de", MESES[[format(data, "%m")]]) else fmt_data(data)))
     ),
     div(
       class = "cartao-numeros",
@@ -192,10 +222,13 @@ linha_registro <- function(destaque, titulo, subtitulo = NULL, selo = NULL, acoe
 marca <- function(x) paste0("|", x, "|")
 
 # Barra proporcional usada nos relatórios (percentual do esforço do mês)
-barra_percentual <- function(percentual, cor = "#2A5C92") {
+barra_percentual <- function(percentual, cor = "#2A5C92", estimado = FALSE) {
   sprintf(
-    '<div class="celula-barra"><span class="celula-valor">%s%%</span><span class="barra-mini"><span style="width:%.1f%%; background:%s;"></span></span></div>',
-    formatC(percentual, format = "f", digits = 1, decimal.mark = ","), min(percentual, 100), cor
+    '<div class="celula-barra"%s><span class="celula-valor">%s%%%s</span><span class="barra-mini"><span style="width:%.1f%%; background:%s;"></span></span></div>',
+    if (isTRUE(estimado)) ' title="Estimado pela quantidade de entregas: o mês não tem horas informadas."' else "",
+    formatC(percentual, format = "f", digits = 1, decimal.mark = ","),
+    if (isTRUE(estimado)) "*" else "",
+    min(percentual, 100), cor
   )
 }
 
