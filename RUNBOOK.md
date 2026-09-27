@@ -61,6 +61,7 @@ Após mudanças em código, configuração, identidade do produto ou documentaç
 10. Confirmar, em tela de celular, que as listas não exigem rolagem lateral e que as janelas de lançamento abrem corretamente.
 11. Baixar um PDF de exportação e conferir cabeçalho, identificação do conteúdo e rodapé.
 12. Conferir que **Exportar a tabela completa** traz mais registros que **Exportar o que está filtrado** quando houver filtros aplicados.
+13. Se o lançamento mensal estiver disponível, gravar um rascunho, conferir que o administrador não o vê, enviar ao gestor e conferir que passou a aparecer.
 
 ## Fluxo recomendado de versionamento
 
@@ -116,6 +117,35 @@ UPDATE audit_logs SET ip = NULL, user_agent = NULL WHERE ip IS NOT NULL OR user_
 
 Se, no futuro, as colunas não forem mais necessárias, elas podem ser removidas do esquema em uma
 manutenção planejada.
+
+## Lançamento mensal
+
+O lançamento mensal permite registrar, de uma vez, as entregas e as horas de cada mês de uma atividade.
+Cada linha gravada usa o dia 1º do mês, com `origem = 'mensal'`.
+
+O recurso depende de duas colunas e um índice em `entregas`. Para prepará-los, com o `.Renviron`
+configurado, execute uma vez:
+
+```r
+source("scripts/migrar_lancamento_mensal.R")
+```
+
+O script é seguro de repetir: usa `IF NOT EXISTS` e não altera registro algum. Os padrões
+(`origem = 'diario'`, `envio = 'enviado'`) fazem os registros existentes manterem o comportamento
+anterior.
+
+Enquanto a migração não for executada, o aplicativo verifica o banco na inicialização, esconde a aba
+de lançamento mensal e funciona normalmente no restante. Assim, publicar a nova versão e migrar o
+banco podem acontecer em qualquer ordem.
+
+Regras do recurso:
+
+- Mês em branco não registra nada; zero não é aceito.
+- O que é digitado nasce como **rascunho**, visível apenas para o servidor.
+- **Enviar ao gestor** envia todos os rascunhos do ano; depois disso o registro continua editável e o
+  administrador vê a versão atual.
+- O esforço permanece sendo horas da atividade ÷ horas do mês. Sem horas informadas no mês, o
+  percentual é estimado pela participação nas entregas e aparece com asterisco.
 
 ## Variáveis de ambiente
 

@@ -7,6 +7,24 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [3.3.0] - 2026-09-27
+
+### Added
+- **Lançamento mensal**: nova aba onde o servidor escolhe uma atividade e informa, de uma vez, as entregas e as horas de cada mês do ano. Mês deixado em branco não registra nada. Atende a prática real de consolidar o ano inteiro em vez de lançar todo dia.
+- **Rascunho e envio ao gestor**: o que é digitado na matriz nasce como rascunho, visível apenas para o servidor. O botão "Enviar ao gestor" envia todos os rascunhos do ano. Depois de enviado, o lançamento continua editável e o administrador passa a ver a versão atual.
+- Consolidado do ano na aba de lançamento mensal, com atividades nas linhas, meses nas colunas e totais.
+- Coluna "já lançado no diário" na matriz, ao lado de cada mês, para evitar contar duas vezes a mesma entrega.
+- `scripts/migrar_lancamento_mensal.R`, que prepara o banco para o recurso.
+
+### Changed
+- O esforço continua sendo horas da atividade ÷ horas do mês: lançar o mês de uma vez ou dia a dia leva ao mesmo percentual. Quando o mês não tem horas informadas, o percentual é estimado pela participação nas entregas e marcado com asterisco, com aviso na tela.
+- Cartões de lançamento mensal mostram o mês no lugar do dia, com as etiquetas "Mensal" e "Rascunho". Clicar neles abre a matriz na atividade correspondente.
+- O administrador deixa de ver lançamentos mensais ainda em rascunho.
+
+### Note
+- O recurso depende de duas colunas em `entregas` (`origem` e `envio`) e de um índice. Enquanto a migração não for executada, a aba não aparece e o restante do aplicativo funciona normalmente. Os registros existentes passam a valer como diários e já enviados, exatamente o comportamento anterior.
+
+---
 ## [3.2.0] - 2026-09-27
 
 ### Changed

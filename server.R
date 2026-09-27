@@ -208,7 +208,12 @@ function(input, output, session) {
     req(usuario())
     entregas_refresh()
     if (eh_admin()) {
-      dados <- dbGetQuery(pool_read, "SELECT * FROM entregas")
+      # Rascunhos do lançamento mensal ficam reservados até o servidor enviar
+      dados <- if (ESQUEMA_MENSAL) {
+        dbGetQuery(pool_read, "SELECT * FROM entregas WHERE envio = 'enviado'")
+      } else {
+        dbGetQuery(pool_read, "SELECT * FROM entregas")
+      }
       nomes <- nomes_servidores()
       dados$nome_servidor <- nomes$nome[match(as.character(dados$servidor), as.character(nomes$siape))]
       dados
@@ -227,7 +232,7 @@ function(input, output, session) {
       admin <- eh_admin()
 
       aba_relatorios <- tabPanel(
-        tagList(icon("chart-column"), "Relatórios"),
+        tagList(icon("chart-column"), "Relatórios"), value = "Relatórios",
         div(
           class = "painel painel-azul",
           cabecalho_secao("chart-column", "Relatório de esforço", "Horas e entregas por mês"),
@@ -247,10 +252,50 @@ function(input, output, session) {
         )
       )
 
+      aba_lancamento_mensal <- if (!admin && ESQUEMA_MENSAL) tabPanel(
+        tagList(icon("table-cells"), "Lançamento mensal"), value = "Lançamento mensal",
+        div(
+          class = "painel painel-azul",
+          div(
+            class = "cabecalho-secao",
+            h4(icon("table-cells"), "Lançamento mensal"),
+            div(
+              class = "acoes-secao",
+              div(class = "tag-secao tag-verde", "Rascunho visível só para você"),
+              uiOutput("out_mm_status", inline = TRUE)
+            )
+          ),
+          p(
+            class = "explicacao",
+            "Escolha uma atividade e informe, de uma vez, as entregas e as horas de cada mês do ano. ",
+            "Deixe em branco os meses sem entrega: em branco não registra nada. ",
+            "Guarde quantas atividades quiser e, quando terminar, envie tudo ao gestor."
+          ),
+          fluidRow(
+            column(4, selectInput("in_mm_codigo", "Atividade", choices = NULL, width = "100%")),
+            column(8, uiOutput("out_mm_resumo_atividade"))
+          ),
+          uiOutput("out_mm_matriz"),
+          div(
+            class = "barra-acoes",
+            actionButton("btn_mm_guardar", "Guardar rascunho", icon = icon("floppy-disk"), class = "btn-salvar"),
+            actionButton("btn_mm_enviar", "Enviar ao gestor", icon = icon("paper-plane"), class = "btn-adicionar"),
+            actionButton("btn_mm_recarregar", "Descartar alterações", icon = icon("rotate-left"), class = "btn-neutro")
+          )
+        ),
+        div(
+          class = "painel painel-verde",
+          cabecalho_secao("table-list", "Consolidado do ano", "Atividades por mês", "tag-verde"),
+          p(class = "explicacao",
+            "Todas as entregas do ano, somando o lançamento diário e o mensal."),
+          uiOutput("out_mm_consolidado")
+        )
+      )
+
       if (!admin) {
         abas <- list(
           tabPanel(
-            tagList(icon("list-check"), "Minhas entregas"),
+            tagList(icon("list-check"), "Minhas entregas"), value = "Minhas entregas",
             ## Esforço do mês ----
             div(
               class = "painel painel-azul",
@@ -263,7 +308,7 @@ function(input, output, session) {
                 column(6, uiOutput("out_status_ano"))
               ),
               uiOutput("out_kpis_mes"),
-              div(class = "titulo-bloco", "Distribuição das horas por atividade"),
+              div(class = "titulo-bloco", "Distribuição do esforço por atividade"),
               uiOutput("out_esforco_mes")
             ),
             ## Lançamentos ----
@@ -298,8 +343,10 @@ function(input, output, session) {
               uiOutput("out_lista_entregas")
             )
           ),
+          if (ESQUEMA_MENSAL) aba_lancamento_mensal,
           aba_relatorios
         )
+        abas <- abas[!vapply(abas, is.null, logical(1))]
       } else {
         abas <- list(
           aba_relatorios,
@@ -518,14 +565,21 @@ function(input, output, session) {
 
     horas <- tapply(dados$horas, dados$codigo, sum, na.rm = TRUE)
     entregas <- tapply(dados$entregas, dados$codigo, sum, na.rm = TRUE)
-    ordem <- order(horas, decreasing = TRUE)
-    total <- sum(horas)
 
+    # Sem horas informadas no mês, o esforço é estimado pelas entregas
+    estimado <- sum(horas, na.rm = TRUE) == 0
+    base <- if (estimado) entregas else horas
+    ordem <- order(base, decreasing = TRUE)
+    total <- sum(base, na.rm = TRUE)
+
+    tagList(
+    if (estimado) div(class = "aviso-estimado", icon("circle-info"),
+                      "Sem horas informadas neste mês: o esforço está estimado pela quantidade de entregas."),
     div(
       class = "lista-esforco",
       lapply(seq_along(ordem), function(i) {
-        codigo <- names(horas)[ordem[i]]
-        percentual <- if (total > 0) horas[[codigo]] / total * 100 else 0
+        codigo <- names(base)[ordem[i]]
+        percentual <- if (total > 0) base[[codigo]] / total * 100 else 0
         div(
           class = "item-esforco",
           div(class = "esforco-nome", title = codigo, codigo),
@@ -539,7 +593,7 @@ function(input, output, session) {
                                         CORES_ESFORCO[(i - 1) %% length(CORES_ESFORCO) + 1])))
         )
       })
-    )
+    ))
   })
 
   ## Filtros da lista de lançamentos ----
@@ -721,6 +775,18 @@ function(input, output, session) {
       showNotification("Ano fechado. Este lançamento só pode ser consultado.", type = "warning")
       return()
     }
+
+    # Um lançamento mensal é editado na matriz, que é onde ele foi criado
+    if (ESQUEMA_MENSAL && identical(linha$origem, "mensal")) {
+      updateSelectInput(session, "in_mm_codigo", selected = linha$codigo)
+      updateTabsetPanel(session, "abas", selected = "Lançamento mensal")
+      showNotification(
+        paste0("Editando ", linha$codigo, " na matriz do ano. Altere os meses e guarde."),
+        type = "message"
+      )
+      return()
+    }
+
     entrega_em_edicao(linha$id)
     form_entrega(linha)
   })
@@ -855,6 +921,332 @@ function(input, output, session) {
   })
 
 
+  # 7.1 LANÇAMENTO MENSAL ----
+  # Uma linha por atividade e mês, sempre no dia 1º, com origem = "mensal".
+  # O esforço continua sendo horas da atividade ÷ horas do mês: lançar o mês de
+  # uma vez ou dia a dia leva ao mesmo percentual.
+
+  mensais_do_ano <- reactive({
+    dados <- minhas_entregas()
+    if (nrow(dados) == 0 || is.null(dados$origem)) return(dados[0, , drop = FALSE])
+    dados[dados$origem == "mensal", , drop = FALSE]
+  })
+
+  diarias_do_ano <- reactive({
+    dados <- minhas_entregas()
+    if (nrow(dados) == 0) return(dados)
+    if (is.null(dados$origem)) return(dados)
+    dados[dados$origem != "mensal", , drop = FALSE]
+  })
+
+  ## Atividades disponíveis, somadas às que já foram usadas no ano ----
+  observe({
+    req(eh_servidor(), ESQUEMA_MENSAL)
+    usadas <- unique(mensais_do_ano()$codigo)
+    opcoes <- union(codigos_validos(), usadas)
+    atual <- isolate(input$in_mm_codigo)
+    updateSelectInput(session, "in_mm_codigo", choices = opcoes,
+                      selected = if (!is.null(atual) && atual %in% opcoes) atual else opcoes[1])
+  })
+
+  output$out_mm_status <- renderUI({
+    req(eh_servidor(), input$in_ano_ciclo)
+    pendentes <- sum(mensais_do_ano()$envio == "rascunho")
+    tagList(
+      if (ano_esta_aberto()) span(class = "status-ano aberto", icon("lock-open"), paste("Ano", ano_ciclo(), "aberto"))
+      else span(class = "status-ano fechado", icon("lock"), paste("Ano", ano_ciclo(), "fechado")),
+      if (pendentes > 0) span(class = "status-ano rascunho", icon("pen-clip"),
+                              paste(pendentes, if (pendentes == 1) "mês em rascunho" else "meses em rascunho"))
+    )
+  })
+
+  ## Matriz de meses da atividade escolhida ----
+  matriz_recarregar <- reactiveVal(0L)
+
+  output$out_mm_matriz <- renderUI({
+    req(eh_servidor(), input$in_mm_codigo, ano_ciclo())
+    matriz_recarregar()
+    codigo <- input$in_mm_codigo
+    aberto <- ano_esta_aberto()
+
+    mensais <- mensais_do_ano()
+    mensais <- mensais[mensais$codigo == codigo, , drop = FALSE]
+    diarias <- diarias_do_ano()
+    diarias <- diarias[diarias$codigo == codigo, , drop = FALSE]
+
+    valor_mes <- function(dados, mes, coluna) {
+      if (nrow(dados) == 0) return(NULL)
+      linhas <- dados[format(as.Date(dados$data), "%m") == mes, , drop = FALSE]
+      if (nrow(linhas) == 0) NULL else sum(linhas[[coluna]], na.rm = TRUE)
+    }
+
+    div(
+      class = "matriz-mensal",
+      div(
+        class = "matriz-cabecalho",
+        span("Mês"), span("Entregas"), span("Horas"), span(class = "mm-info", "Já lançado no diário")
+      ),
+      lapply(names(MESES), function(mes) {
+        entregas <- valor_mes(mensais, mes, "entregas")
+        horas <- valor_mes(mensais, mes, "horas")
+        d_ent <- valor_mes(diarias, mes, "entregas")
+        d_hrs <- valor_mes(diarias, mes, "horas")
+
+        div(
+          class = paste("matriz-linha", if (!is.null(entregas)) "preenchida"),
+          div(class = "mm-rotulo", MESES[[mes]]),
+          div(class = "mm-campo",
+              span(class = "mm-legenda", "Entregas"),
+              numericInput(paste0("mm_ent_", mes), NULL, value = entregas, min = 0, step = 1, width = "100%")),
+          div(class = "mm-campo",
+              span(class = "mm-legenda", "Horas"),
+              numericInput(paste0("mm_hrs_", mes), NULL, value = horas, min = 0, step = 0.5, width = "100%")),
+          div(class = "mm-info",
+              if (!is.null(d_ent)) sprintf("%s %s · %s", fmt_num(d_ent, 0),
+                                          if (isTRUE(d_ent == 1)) "entrega" else "entregas",
+                                          fmt_horas(d_hrs %||% 0)) else "—")
+        )
+      }),
+      if (!aberto) div(class = "aviso-matriz", icon("lock"),
+                       "Ano fechado: a matriz está apenas para consulta.")
+    )
+  })
+
+  observe({
+    req(eh_servidor(), ESQUEMA_MENSAL, input$in_ano_ciclo)
+    aberto <- ano_esta_aberto()
+    for (mes in names(MESES)) {
+      shinyjs::toggleState(paste0("mm_ent_", mes), condition = aberto)
+      shinyjs::toggleState(paste0("mm_hrs_", mes), condition = aberto)
+    }
+    for (botao in c("btn_mm_guardar", "btn_mm_enviar")) shinyjs::toggleState(botao, condition = aberto)
+  })
+
+  output$out_mm_resumo_atividade <- renderUI({
+    req(eh_servidor(), input$in_mm_codigo)
+    dados <- minhas_entregas()
+    dados <- dados[dados$codigo == input$in_mm_codigo, , drop = FALSE]
+    div(
+      class = "resumo-atividade",
+      div(span(class = "resumo-valor", fmt_num(sum(dados$entregas, na.rm = TRUE), 0)),
+          span(class = "resumo-rotulo", "entregas no ano")),
+      div(span(class = "resumo-valor", fmt_horas(sum(dados$horas, na.rm = TRUE))),
+          span(class = "resumo-rotulo", "horas no ano")),
+      div(span(class = "resumo-valor", length(unique(format(as.Date(dados$data), "%m")))),
+          span(class = "resumo-rotulo", "meses com registro"))
+    )
+  })
+
+  observeEvent(input$btn_mm_recarregar, {
+    req(eh_servidor())
+    matriz_recarregar(isolate(matriz_recarregar()) + 1L)
+    showNotification("Alterações descartadas.", type = "message")
+  })
+
+  ## Leitura e validação da matriz ----
+  ler_matriz <- function() {
+    linhas <- lapply(names(MESES), function(mes) {
+      entregas <- input[[paste0("mm_ent_", mes)]]
+      horas <- input[[paste0("mm_hrs_", mes)]]
+      data.frame(
+        mes = mes,
+        entregas = if (is.null(entregas) || is.na(entregas)) NA_real_ else as.numeric(entregas),
+        horas = if (is.null(horas) || is.na(horas)) NA_real_ else as.numeric(horas),
+        stringsAsFactors = FALSE
+      )
+    })
+    do.call(rbind, linhas)
+  }
+
+  validar_matriz <- function(matriz) {
+    for (i in seq_len(nrow(matriz))) {
+      entregas <- matriz$entregas[i]
+      horas <- matriz$horas[i]
+      nome_mes <- MESES[[matriz$mes[i]]]
+
+      if (!is.na(entregas)) {
+        if (entregas < 0 || entregas != round(entregas))
+          return(paste0("Em ", nome_mes, ", informe a quantidade de entregas como número inteiro."))
+        if (entregas == 0 && is.na(horas))
+          return(paste0("Em ", nome_mes, ", zero não precisa ser registrado: deixe o campo em branco."))
+      }
+      if (!is.na(horas)) {
+        if (horas < 0 || horas > 8784)
+          return(paste0("Em ", nome_mes, ", informe as horas entre 0 e 8784."))
+        if (is.na(entregas) || entregas == 0)
+          return(paste0("Em ", nome_mes, ", informe também a quantidade de entregas."))
+      }
+    }
+    NULL
+  }
+
+  # Grava a atividade escolhida: insere, atualiza ou remove cada mês da matriz
+  gravar_matriz <- function(enviar_agora = FALSE) {
+    codigo <- input$in_mm_codigo
+    ano <- ano_ciclo()
+    matriz <- ler_matriz()
+
+    erro <- validar_matriz(matriz)
+    if (!is.null(erro)) {
+      showNotification(erro, type = "warning")
+      return(NULL)
+    }
+
+    existentes <- mensais_do_ano()
+    existentes <- existentes[existentes$codigo == codigo, , drop = FALSE]
+    mes_existente <- if (nrow(existentes)) format(as.Date(existentes$data), "%m") else character()
+
+    gravados <- 0L; removidos <- 0L
+
+    ok <- gravar(
+      pool::poolWithTransaction(pool_write, function(con) {
+        for (i in seq_len(nrow(matriz))) {
+          mes <- matriz$mes[i]
+          entregas <- matriz$entregas[i]
+          horas <- if (is.na(matriz$horas[i])) 0 else matriz$horas[i]
+          data_mes <- paste0(ano, "-", mes, "-01")
+          indice <- match(mes, mes_existente)
+
+          if (!is.na(entregas) && entregas > 0) {
+            if (is.na(indice)) {
+              dbExecute(
+                con,
+                "INSERT INTO entregas (data, ano, codigo, entregas, horas, status, servidor, origem, envio)
+                 VALUES ($1, $2, $3, $4, $5, 'Concluído', $6, 'mensal', $7)",
+                params = list(data_mes, ano, codigo, entregas, horas, usuario(),
+                              if (enviar_agora) "enviado" else "rascunho")
+              )
+            } else {
+              # Um mês já enviado permanece enviado: o gestor passa a ver a versão atual
+              dbExecute(
+                con,
+                "UPDATE entregas SET entregas = $1, horas = $2, envio = $3
+                  WHERE id = $4 AND servidor = $5 AND origem = 'mensal'",
+                params = list(entregas, horas,
+                              if (enviar_agora || identical(existentes$envio[indice], "enviado")) "enviado" else "rascunho",
+                              existentes$id[indice], usuario())
+              )
+            }
+            gravados <<- gravados + 1L
+          } else if (!is.na(indice)) {
+            dbExecute(con, "DELETE FROM entregas WHERE id = $1 AND servidor = $2 AND origem = 'mensal'",
+                      params = list(existentes$id[indice], usuario()))
+            removidos <<- removidos + 1L
+          }
+        }
+      }),
+      sprintf("%s %s%s.",
+              if (gravados == 0) "Nenhum mês" else gravados,
+              if (gravados == 1) "mês gravado" else "meses gravados",
+              if (removidos > 0) sprintf(" · %d removido%s", removidos, if (removidos > 1) "s" else "") else "")
+    )
+
+    if (ok) marcar(entregas_refresh)
+    ok
+  }
+
+  observeEvent(input$btn_mm_guardar, {
+    req(eh_servidor(), ano_ciclo())
+    if (!ano_esta_aberto()) {
+      showNotification("Ano fechado. Não é possível alterar lançamentos.", type = "error")
+      return()
+    }
+    gravar_matriz(enviar_agora = FALSE)
+  })
+
+  ## Envio ao gestor: manda tudo que estiver em rascunho no ano ----
+  observeEvent(input$btn_mm_enviar, {
+    req(eh_servidor(), ano_ciclo())
+    if (!ano_esta_aberto()) {
+      showNotification("Ano fechado. Não é possível alterar lançamentos.", type = "error")
+      return()
+    }
+    if (is.null(gravar_matriz(enviar_agora = FALSE))) return()
+
+    pendentes <- mensais_do_ano()
+    pendentes <- pendentes[pendentes$envio == "rascunho", , drop = FALSE]
+
+    if (nrow(pendentes) == 0) {
+      showNotification("Não há rascunhos para enviar: tudo já está com o gestor.", type = "message")
+      return()
+    }
+
+    confirm_action(
+      "confirm_mm_enviar",
+      message = sprintf(
+        "Enviar ao gestor %d %s de %d %s, referentes a %s? Depois de enviado você ainda pode editar, e o gestor passa a ver a versão atual.",
+        nrow(pendentes), if (nrow(pendentes) == 1) "mês" else "meses",
+        length(unique(pendentes$codigo)),
+        if (length(unique(pendentes$codigo)) == 1) "atividade" else "atividades",
+        ano_ciclo()
+      ),
+      label_confirm = "Enviar ao gestor",
+      class_confirm = "btn-adicionar",
+      icon_confirm = icon("paper-plane")
+    )
+  })
+
+  observeEvent(input$confirm_mm_enviar, {
+    removeModal()
+    req(eh_servidor(), ano_ciclo())
+
+    ok <- gravar(
+      dbExecute(
+        pool_write,
+        "UPDATE entregas SET envio = 'enviado'
+          WHERE servidor = $1 AND ano = $2 AND origem = 'mensal' AND envio = 'rascunho'",
+        params = list(usuario(), ano_ciclo())
+      ),
+      "Lançamentos enviados ao gestor."
+    )
+    if (ok) marcar(entregas_refresh)
+  })
+
+  ## Consolidado do ano: atividades nas linhas, meses nas colunas ----
+  output$out_mm_consolidado <- renderUI({
+    req(eh_servidor(), ano_ciclo())
+    dados <- minhas_entregas()
+
+    if (nrow(dados) == 0) {
+      return(div(class = "nenhum-registro", paste0("Nenhum lançamento em ", ano_ciclo(), ".")))
+    }
+
+    dados$mes <- format(as.Date(dados$data), "%m")
+    meses <- sort(unique(dados$mes))
+    atividades <- sort(unique(dados$codigo))
+    total_por <- function(codigo, mes) sum(dados$entregas[dados$codigo == codigo & dados$mes == mes], na.rm = TRUE)
+
+    tags$div(
+      class = "tabela-consolidado",
+      tags$table(
+        tags$thead(tags$tr(
+          tags$th("Atividade"),
+          lapply(meses, function(mes) tags$th(class = "num", substr(MESES[[mes]], 1, 3))),
+          tags$th(class = "num total", "Ano")
+        )),
+        tags$tbody(
+          lapply(atividades, function(codigo) {
+            valores <- vapply(meses, function(mes) total_por(codigo, mes), numeric(1))
+            tags$tr(
+              tags$td(codigo),
+              lapply(seq_along(meses), function(i) {
+                tags$td(class = "num", if (valores[i] > 0) fmt_num(valores[i], 0) else "–")
+              }),
+              tags$td(class = "num total", fmt_num(sum(valores), 0))
+            )
+          })
+        ),
+        tags$tfoot(tags$tr(
+          tags$th("Total do mês"),
+          lapply(meses, function(mes) {
+            tags$th(class = "num", fmt_num(sum(dados$entregas[dados$mes == mes], na.rm = TRUE), 0))
+          }),
+          tags$th(class = "num total", fmt_num(sum(dados$entregas, na.rm = TRUE), 0))
+        ))
+      )
+    )
+  })
+
   # 8. RELATÓRIOS ----
   ## Opções dos filtros, preservando a escolha atual ----
   atualizar_filtro <- function(id, opcoes) {
@@ -958,8 +1350,22 @@ function(input, output, session) {
     identificar <- function(d) {
       if (eh_admin()) paste(d$chave_servidor, d$ano, d$mes) else paste(d$ano, d$mes)
     }
-    total <- total_mes$horas[match(identificar(resumo), identificar(total_mes))]
-    resumo$percentual <- ifelse(total > 0, round(resumo$horas / total * 100, 1), 0)
+    # Esforço = horas da atividade ÷ horas do mês. Quando o mês não tem horas
+    # informadas, o percentual é estimado pela participação nas entregas.
+    total_entregas <- aggregate(
+      if (eh_admin()) entregas ~ chave_servidor + ano + mes else entregas ~ ano + mes,
+      data = dados, FUN = sum
+    )
+    chave <- identificar(resumo)
+    total_h <- total_mes$horas[match(chave, identificar(total_mes))]
+    total_e <- total_entregas$entregas[match(chave, identificar(total_entregas))]
+
+    resumo$estimado <- !(total_h > 0)
+    resumo$percentual <- ifelse(
+      total_h > 0,
+      round(resumo$horas / total_h * 100, 1),
+      ifelse(total_e > 0, round(resumo$entregas / total_e * 100, 1), 0)
+    )
 
     if (eh_admin()) {
       nomes <- nomes_servidores()
@@ -991,7 +1397,7 @@ function(input, output, session) {
       Atividade = resumo$codigo,
       Entregas = fmt_num(resumo$entregas, 0),
       Horas = fmt_horas(resumo$horas),
-      `Esforço no mês` = mapply(barra_percentual, resumo$percentual, cores),
+      `Esforço no mês` = mapply(barra_percentual, resumo$percentual, cores, resumo$estimado),
       check.names = FALSE
     )
     if (eh_admin()) exibir <- cbind(Servidor = resumo$nome_servidor, exibir)
