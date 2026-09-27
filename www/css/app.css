@@ -240,6 +240,10 @@ table.dataTable tbody tr.selected > td:first-child { box-shadow:inset 4px 0 0 va
 .modal-footer .btn { margin-left:8px; }
 .modal-footer .acao-esquerda { margin-left:0; }
 
+/* Nota de rodapé de uma tabela */
+.nota-tabela { display:flex; align-items:flex-start; gap:8px; margin-top:10px; padding:10px 13px; background:var(--amber-soft); border:1px solid #f0dc9a; border-radius:8px; color:#6b5200; font-size:12px; line-height:1.5; }
+.nota-tabela .nota-marca { color:var(--amber); font-size:15px; font-weight:800; line-height:1.1; }
+
 /* Barra de esforço dentro da tabela de relatórios */
 .celula-barra { display:flex; min-width:150px; align-items:center; gap:10px; justify-content:flex-end; }
 .celula-valor { color:var(--navy); font-size:12px; font-weight:800; font-variant-numeric:tabular-nums; min-width:46px; text-align:right; }
