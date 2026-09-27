@@ -385,12 +385,15 @@ function(input, output, session) {
   # `titulo`/`chave`: quando informados, a tabela ganha o menu de exportação.
   tabela_padrao <- function(dados, selection = "single", escape = TRUE, pageLength = 15,
                             ordem = list(), ocultar_mobile = character(), alinhar_direita = character(),
-                            titulo = NULL, chave = "") {
+                            titulo = NULL, chave = "", ocultar = character()) {
     indices <- function(nomes) match(intersect(nomes, names(dados)), names(dados)) - 1L
     coluna <- function(nomes) as.list(match(intersect(nomes, names(dados)), names(dados)) - 1L)
     definicoes <- c(
       lapply(coluna(ocultar_mobile), function(i) list(targets = i, className = "ocultar-mobile")),
-      lapply(coluna(alinhar_direita), function(i) list(targets = i, className = "dt-right"))
+      lapply(coluna(alinhar_direita), function(i) list(targets = i, className = "dt-right")),
+      # Colunas de apoio: invisíveis na tela e na exportação, mas pesquisáveis,
+      # o que permite aplicar os filtros como busca da própria tabela
+      lapply(coluna(ocultar), function(i) list(targets = i, visible = FALSE, searchable = TRUE))
     )
 
     datatable(
@@ -933,25 +936,52 @@ function(input, output, session) {
     )
   })
 
-  output$out_tabela_relatorio <- renderDT({
-    dados <- dados_relatorio()
-
-    if (nrow(dados) == 0) {
-      return(tabela_padrao(
-        data.frame(Mensagem = "Nenhum registro encontrado para os filtros selecionados."),
-        selection = "none"
-      ))
-    }
+  # O relatório é montado com todos os registros visíveis ao usuário; os filtros
+  # do topo são aplicados como busca da própria tabela. Assim o esforço de cada
+  # mês é sempre calculado sobre o mês inteiro, e a exportação pode escolher
+  # entre o que está filtrado e a tabela completa.
+  resumo_relatorio <- reactive({
+    dados <- entregas_visiveis()
+    if (nrow(dados) == 0) return(dados[0, , drop = FALSE])
 
     dados$ano <- format(as.Date(dados$data), "%Y")
     dados$mes <- format(as.Date(dados$data), "%m")
+    dados$chave_servidor <- if (eh_admin()) as.character(dados$servidor) else usuario()
 
-    # Esforço = participação de cada atividade nas horas do mês
-    resumo <- aggregate(cbind(entregas, horas) ~ ano + mes + codigo, data = dados, FUN = sum)
-    total_mes <- aggregate(horas ~ ano + mes, data = dados, FUN = sum)
-    total <- total_mes$horas[match(paste(resumo$ano, resumo$mes), paste(total_mes$ano, total_mes$mes))]
+    por <- if (eh_admin()) cbind(entregas, horas) ~ chave_servidor + ano + mes + codigo
+           else cbind(entregas, horas) ~ ano + mes + codigo
+    por_mes <- if (eh_admin()) horas ~ chave_servidor + ano + mes else horas ~ ano + mes
+
+    resumo <- aggregate(por, data = dados, FUN = sum)
+    total_mes <- aggregate(por_mes, data = dados, FUN = sum)
+
+    identificar <- function(d) {
+      if (eh_admin()) paste(d$chave_servidor, d$ano, d$mes) else paste(d$ano, d$mes)
+    }
+    total <- total_mes$horas[match(identificar(resumo), identificar(total_mes))]
     resumo$percentual <- ifelse(total > 0, round(resumo$horas / total * 100, 1), 0)
-    resumo <- resumo[order(resumo$ano, resumo$mes, -resumo$horas, decreasing = c(TRUE, TRUE, FALSE), method = "radix"), ]
+
+    if (eh_admin()) {
+      nomes <- nomes_servidores()
+      resumo$nome_servidor <- nomes$nome[match(resumo$chave_servidor, as.character(nomes$siape))]
+      resumo$nome_servidor <- ifelse(is.na(resumo$nome_servidor), resumo$chave_servidor, resumo$nome_servidor)
+    }
+
+    resumo[order(resumo$ano, resumo$mes, -resumo$horas,
+                 decreasing = c(TRUE, TRUE, FALSE), method = "radix"), , drop = FALSE]
+  })
+
+  # server = FALSE mantém a tabela inteira no navegador: sem isso, a busca e a
+  # exportação enxergariam apenas a página carregada no momento.
+  output$out_tabela_relatorio <- renderDT(server = FALSE, {
+    resumo <- resumo_relatorio()
+
+    if (nrow(resumo) == 0) {
+      return(tabela_padrao(
+        data.frame(Mensagem = "Nenhum lançamento registrado até o momento."),
+        selection = "none"
+      ))
+    }
 
     # O esforço aparece como barra proporcional, mais legível que o número sozinho
     cores <- CORES_ESFORCO[(match(resumo$codigo, sort(unique(resumo$codigo))) - 1) %% length(CORES_ESFORCO) + 1]
@@ -964,9 +994,38 @@ function(input, output, session) {
       `Esforço no mês` = mapply(barra_percentual, resumo$percentual, cores),
       check.names = FALSE
     )
+    if (eh_admin()) exibir <- cbind(Servidor = resumo$nome_servidor, exibir)
+
+    # Colunas de apoio, invisíveis: guardam o valor exato de cada filtro entre
+    # barras verticais, para que a busca por um código não alcance outro que o contenha
+    exibir$f_ano <- marca(resumo$ano)
+    exibir$f_mes <- marca(resumo$mes)
+    exibir$f_codigo <- marca(resumo$codigo)
+    if (eh_admin()) exibir$f_servidor <- marca(resumo$chave_servidor)
+
     tabela_padrao(exibir, selection = "none", escape = sem_escape(exibir, "Esforço no mês"),
                   alinhar_direita = c("Entregas", "Horas"),
+                  ocultar = c("f_ano", "f_mes", "f_codigo", "f_servidor"),
                   titulo = "Relatório de esforço", chave = "relatorio")
+  })
+
+  ## Os filtros do topo viram busca por coluna na tabela já montada ----
+  observe({
+    req(usuario(), input$in_filtro_ano)
+    resumo_relatorio()
+
+    busca <- function(valor) if (is.null(valor) || valor == "Todos") "" else marca(valor)
+    colunas <- c(
+      if (eh_admin()) "",            # Servidor
+      "", "", "", "", "",            # Período, Atividade, Entregas, Horas, Esforço
+      busca(input$in_filtro_ano),
+      busca(input$in_filtro_mes),
+      busca(input$in_filtro_codigo),
+      if (eh_admin()) busca(input$in_filtro_servidor)
+    )
+    session$sendCustomMessage("me_filtrar_tabela", list(
+      id = "out_tabela_relatorio", colunas = as.list(colunas)
+    ))
   })
 
 
@@ -986,7 +1045,9 @@ function(input, output, session) {
     )
   })
 
-  output$out_tabela_todos <- renderDT({
+  # server = FALSE mantém a tabela inteira no navegador: sem isso, a busca e a
+  # exportação enxergariam apenas a página carregada no momento.
+  output$out_tabela_todos <- renderDT(server = FALSE, {
     req(eh_admin())
     dados <- entregas_visiveis()
     dados <- dados[order(as.Date(dados$data), decreasing = TRUE), , drop = FALSE]
@@ -1039,7 +1100,9 @@ function(input, output, session) {
     )
   })
 
-  output$out_tabela_audit_anos <- renderDT({
+  # server = FALSE mantém a tabela inteira no navegador: sem isso, a busca e a
+  # exportação enxergariam apenas a página carregada no momento.
+  output$out_tabela_audit_anos <- renderDT(server = FALSE, {
     req(eh_admin())
     admin_refresh()
     dados <- dbGetQuery(

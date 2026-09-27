@@ -30,7 +30,7 @@ Seu objetivo é oferecer uma base confiável para:
 - Painel de esforço do mês, com a distribuição das horas por atividade.
 - Filtros de mês, atividade e situação na lista de lançamentos.
 - Relatórios com filtros por ano, mês, servidor e código.
-- Exportação das tabelas em PDF, Excel e CSV, com escolha entre os registros filtrados e a tabela completa. O PDF sai com cabeçalho, identificação do conteúdo e rodapé com data e hora da emissão.
+- Exportação das tabelas em PDF, Excel e CSV, com escolha entre os registros filtrados e a tabela completa, que ignora os filtros da tela. O PDF sai com cabeçalho, identificação do conteúdo e rodapé com data e hora da emissão.
 - Painel administrativo para gerenciar anos, códigos e servidores.
 - Auditoria de ações administrativas sobre anos de ciclo.
 - Uso de pools de conexão separados para leitura e escrita no PostgreSQL.

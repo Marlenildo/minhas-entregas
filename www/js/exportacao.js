@@ -15,6 +15,33 @@ $(function () {
   }
 });
 
+/* Aplica os filtros da tela como busca por coluna da tabela já montada.
+   O updateSearch do DT depende da linha de filtros nativa, que não é usada aqui. */
+window.meFiltrarTabela = function (mensagem, tentativa) {
+  var elemento = document.getElementById(mensagem.id);
+  var tabela = elemento ? $(elemento).find("table.dataTable") : $();
+
+  if (!tabela.length || !$.fn.dataTable.isDataTable(tabela)) {
+    // A mensagem pode chegar antes de a tabela ter sido desenhada
+    if ((tentativa || 0) < 20) {
+      setTimeout(function () { window.meFiltrarTabela(mensagem, (tentativa || 0) + 1); }, 150);
+    }
+    return;
+  }
+
+  var dt = tabela.DataTable();
+  (mensagem.colunas || []).forEach(function (valor, i) {
+    if (i < dt.columns().count()) dt.column(i).search(valor || "");
+  });
+  dt.draw();
+};
+
+$(function () {
+  if (window.Shiny) {
+    Shiny.addCustomMessageHandler("me_filtrar_tabela", function (m) { window.meFiltrarTabela(m, 0); });
+  }
+});
+
 /* Células exportadas saem sem marcação: selos e barras viram apenas texto. */
 window.meTexto = function (valor) {
   if (valor === null || valor === undefined) return "";
@@ -92,7 +119,7 @@ window.mePdf = function (doc, opcoes) {
   var detalhes = [];
   if (ctx.servidor) detalhes.push(ctx.servidor);
   detalhes.push(opcoes.escopo);
-  if (filtros) detalhes.push("Filtros: " + filtros);
+  if (opcoes.filtrado && filtros) detalhes.push("Filtros: " + filtros);
   detalhes.push(linhas + (linhas === 1 ? " registro" : " registros"));
 
   doc.content.unshift({

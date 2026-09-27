@@ -130,11 +130,39 @@ table.dataTable tbody tr:hover { background:#eaf2fa!important; cursor:pointer; }
 table.dataTable tbody tr.selected > td { background-color:#dbe8f5!important; box-shadow:none!important; color:var(--navy)!important; font-weight:700; }
 table.dataTable tbody tr.selected > td:first-child { box-shadow:inset 4px 0 0 var(--blue)!important; }
 .dataTables_wrapper .dataTables_info { padding:12px 14px!important; color:var(--muted); font-size:12px; }
-.dataTables_wrapper .dataTables_paginate { padding:8px 12px!important; }
-.dataTables_wrapper .dataTables_paginate .paginate_button { border:1px solid var(--line)!important; border-radius:5px!important; color:var(--blue)!important; background:#fff!important; margin-left:4px; }
-.dataTables_wrapper .dataTables_paginate .paginate_button.current,.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.disabled) { color:#fff!important; background:var(--blue)!important; border-color:var(--blue)!important; }
-.dataTables_wrapper .dataTables_paginate .paginate_button.disabled { color:#aab7c4!important; }
-table.dataTable.no-footer { border-bottom:1px solid var(--line); }
+.dataTables_wrapper .dataTables_paginate { padding:10px 14px!important; }
+/* Paginação: a folha do DataTables usa !important nas cores, e é carregada depois
+   desta, então estas regras precisam de seletores mais específicos para vencer. */
+.dataTables_wrapper div.dataTables_paginate { display:flex; justify-content:flex-end; gap:6px; }
+.dataTables_wrapper div.dataTables_paginate ul.pagination { display:flex; gap:6px; margin:0; }
+.dataTables_wrapper div.dataTables_paginate > span { display:flex; gap:6px; }
+.dataTables_wrapper div.dataTables_paginate li.paginate_button { list-style:none; margin:0!important; border:0!important; background:none!important; }
+.dataTables_wrapper div.dataTables_paginate a.paginate_button,
+.dataTables_wrapper div.dataTables_paginate li.paginate_button > a,
+.dataTables_wrapper div.dataTables_paginate ul.pagination > li > a,
+.dataTables_wrapper div.dataTables_paginate ul.pagination > li > span {
+  display:inline-flex!important; align-items:center; justify-content:center; min-width:34px; height:32px; padding:0 11px!important;
+  border:1px solid var(--line)!important; border-radius:7px!important; background:#fff!important; background-image:none!important;
+  color:var(--blue)!important; font-size:12.5px; font-weight:800; text-decoration:none; box-shadow:none!important;
+  transition:color .15s, background .15s, border-color .15s;
+}
+.dataTables_wrapper div.dataTables_paginate a.paginate_button:hover:not(.disabled):not(.current),
+.dataTables_wrapper div.dataTables_paginate ul.pagination > li:not(.active):not(.disabled) > a:hover {
+  color:var(--navy)!important; background:var(--blue-soft)!important; border-color:#aac4da!important;
+}
+.dataTables_wrapper div.dataTables_paginate a.paginate_button.current,
+.dataTables_wrapper div.dataTables_paginate a.paginate_button.current:hover,
+.dataTables_wrapper div.dataTables_paginate ul.pagination > li.active > a,
+.dataTables_wrapper div.dataTables_paginate ul.pagination > li.active > a:hover,
+.dataTables_wrapper div.dataTables_paginate ul.pagination > li.active > span {
+  color:#fff!important; background:var(--navy)!important; background-image:none!important; border-color:var(--navy)!important;
+}
+.dataTables_wrapper div.dataTables_paginate a.paginate_button.disabled,
+.dataTables_wrapper div.dataTables_paginate a.paginate_button.disabled:hover,
+.dataTables_wrapper div.dataTables_paginate ul.pagination > li.disabled > a,
+.dataTables_wrapper div.dataTables_paginate ul.pagination > li.disabled > span {
+  color:#aab7c4!important; background:#fbfcfd!important; border-color:var(--line)!important; cursor:default;
+}
 .selo-status { display:inline-block; border-radius:999px; padding:2px 9px; font-size:11px; font-weight:800; white-space:nowrap; }
 .selo-concluido { color:var(--green-dark); background:var(--green-soft); }
 .selo-andamento { color:var(--amber); background:var(--amber-soft); }
@@ -316,6 +344,7 @@ div.dt-button-background { background:rgba(23,59,91,.18); }
   .celula-valor { font-size:11px; min-width:0; }
   .dataTables_wrapper .dt-buttons { display:flex; flex-wrap:wrap; gap:6px; }
   .dataTables_wrapper .dt-buttons .dt-button { margin:0; flex:1 1 auto; justify-content:center; font-size:11.5px; padding:7px 9px; }
+  .dataTables_wrapper .dataTables_paginate { justify-content:center; flex-wrap:wrap; }
   .esforco-valores { text-align:left; }
   .dataTables_wrapper { overflow-x:auto; }
 }

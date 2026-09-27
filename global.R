@@ -188,6 +188,9 @@ linha_registro <- function(destaque, titulo, subtitulo = NULL, selo = NULL, acoe
   )
 }
 
+# Valor de filtro entre barras verticais: a busca por "|A01|" não alcança "|A01 - interno|"
+marca <- function(x) paste0("|", x, "|")
+
 # Barra proporcional usada nos relatórios (percentual do esforço do mês)
 barra_percentual <- function(percentual, cor = "#2A5C92") {
   sprintf(
@@ -240,7 +243,9 @@ botoes_exportacao <- function(titulo, chave, direita = integer(), flexivel = int
   # o nome do sistema, o da tabela e a data da exportação.
   nome_arquivo <- paste("Minhas Entregas -", titulo, "-", format(Sys.Date(), "%d-%m-%Y"))
   lista_js <- function(x) paste0("[", paste(as.integer(x), collapse = ", "), "]")
-  escopo <- function(filtrado) if (filtrado) "Somente os registros filtrados" else "Tabela completa"
+  escopo <- function(filtrado) {
+    if (filtrado) "Somente os registros filtrados" else "Tabela completa, sem filtros"
+  }
 
   botao <- function(tipo, rotulo, filtrado, extra = list()) {
     c(list(
@@ -251,8 +256,9 @@ botoes_exportacao <- function(titulo, chave, direita = integer(), flexivel = int
   pdf <- function(rotulo, filtrado) botao("pdfHtml5", rotulo, filtrado, list(
     pageSize = "A4", orientation = "portrait",
     customize = JS(sprintf(
-      "function(doc) { mePdf(doc, { titulo: %s, escopo: %s, chave: %s, direita: %s, flexivel: %s }); }",
-      js_txt(titulo), js_txt(escopo(filtrado)), js_txt(chave), lista_js(direita), lista_js(flexivel)
+      "function(doc) { mePdf(doc, { titulo: %s, escopo: %s, chave: %s, filtrado: %s, direita: %s, flexivel: %s }); }",
+      js_txt(titulo), js_txt(escopo(filtrado)), js_txt(chave),
+      if (filtrado) "true" else "false", lista_js(direita), lista_js(flexivel)
     ))
   ))
 
