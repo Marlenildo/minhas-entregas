@@ -1732,28 +1732,31 @@
   },
   "files": {
     "VERSION": {
-      "checksum": "1c11e61133774b6e20dca9703a2b9fdf"
+      "checksum": "00405d48f10800927f86a595da4a18e9"
     },
     "global.R": {
-      "checksum": "87de6c9115f15ca9c589bfdac7523067"
+      "checksum": "c23c7e3a1c2324659315bbdaaa147d99"
     },
     "server.R": {
-      "checksum": "32b14de930bf76f02326156bc84eb678"
+      "checksum": "accb5db5a1384bbf55f9c19d9cdf5820"
     },
     "ui.R": {
-      "checksum": "8336022f34fad03be007f331ab9abe77"
+      "checksum": "abf6b4f0d42266f717daec44b0a26909"
     },
     "www/css/app.css": {
-      "checksum": "b433a8916a7ffb2dfe830bf9ee76a838"
+      "checksum": "e640e9f3e20b06b93a6ce7f5557d7c4a"
     },
     "www/img/favicon.png": {
-      "checksum": "e25c5d8a47f06bab638121472b6f1fe2"
+      "checksum": "387b99a0e83c1de9adef266fbaef638c"
     },
     "www/img/logo_app.png": {
-      "checksum": "0e02305a85c05425956419d0c40b923b"
+      "checksum": "eb2ce350e20cc7abffab8d62d2178579"
     },
     "www/img/logo_marlenildo.png": {
       "checksum": "9f0a79c5d286ff05fa4512916dbfbce5"
+    },
+    "www/js/exportacao.js": {
+      "checksum": "01e39e88dc80aece2cd57cbdeaa75200"
     }
   },
   "users": null

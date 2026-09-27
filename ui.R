@@ -9,6 +9,10 @@ fluidPage(
     tags$meta(name = "author", content = "Marlenildo Melo"),
     tags$meta(name = "description", content = "Minhas Entregas: registro de entregas e cálculo do esforço mensal dos servidores técnico-administrativos."),
     tags$title("Minhas Entregas · Esforço e entregas"),
+    # Bibliotecas e rotinas de exportação das tabelas (PDF, Excel, CSV)
+    dependencias_exportacao(),
+    tags$script(src = "js/exportacao.js"),
+    if (!is.null(LOGO_PDF)) tags$script(HTML(sprintf("window.ME_LOGO = '%s';", LOGO_PDF))),
     # O seletor de data só existe dentro da janela de lançamento; sem isto,
     # a biblioteca do calendário não é carregada com a página e ele falha lá.
     htmltools::findDependencies(dateInput("dep_calendario", NULL)),

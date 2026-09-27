@@ -4,6 +4,23 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 
 ---
 ## [Unreleased]
+- Em desenvolvimento.
+
+---
+## [3.1.0] - 2026-09-27
+
+### Added
+- Filtros na lista de lançamentos: mês, atividade e situação, com resumo do que está sendo mostrado e botão para limpar. Facilita localizar um lançamento antes de editar ou remover.
+- Menu de exportação nas tabelas, com PDF, Excel, CSV e cópia, permitindo escolher entre o que está filtrado e a tabela completa.
+- PDF de exportação com a identidade do aplicativo: cabeçalho claro com a logo, bloco que identifica servidor, escopo, filtros e número de registros, tabela formatada e rodapé com direitos autorais, data e hora da emissão e versão. Página A4 em retrato.
+
+### Changed
+- Relatórios passam a mostrar a quantidade de entregas também em telas estreitas, junto das horas e do esforço.
+- Seletores, campos de busca e controles das tabelas padronizados na identidade visual; a situação do lançamento passa a ser escolhida em etiquetas.
+- Logo com os arcos mais afastados entre si.
+
+### Fixed
+- Correção da falha de JavaScript (`andSelf`) na versão do DataTables Buttons distribuída com o pacote DT, que impedia parte das exportações.
 
 ### Added
 - `.Renviron.example`: modelo das variáveis de ambiente, com valores de exemplo e comentários sobre a origem de cada uma. O `.Renviron` real continua fora do versionamento.
