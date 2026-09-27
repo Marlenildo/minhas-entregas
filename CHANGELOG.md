@@ -7,6 +7,13 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [3.4.1] - 2026-09-27
+
+### Changed
+- A aba **Todas as entregas** passa a seguir o ano escolhido no cabeçalho, como as demais abas: a tabela, os indicadores e o PDF exportado ficam restritos ao ciclo em vista, e trocar o ano no cabeçalho troca o ciclo mostrado.
+- Quando o ano em vista não tem lançamento, a tabela diz qual ano está vazio, em lugar da mensagem genérica. Vale também para o relatório.
+
+---
 ## [3.4.0] - 2026-09-27
 
 ### Changed
