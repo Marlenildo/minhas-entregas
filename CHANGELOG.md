@@ -7,6 +7,17 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [3.4.0] - 2026-09-27
+
+### Changed
+- O **ano do ciclo passa a ser escolhido no cabeçalho**, fora das abas, com o selo de aberto ou fechado ao lado. Antes o seletor vivia dentro da aba "Minhas entregas" e governava também a aba mensal: na matriz aparecia o efeito do ano sem o controle que o define, e trocar de ano exigia sair da aba.
+- O relatório passa a usar esse mesmo ano, em lugar do filtro de ano próprio, que começava em "Todos" e criava uma segunda noção de ano na mesma sessão. No lugar dele há a escolha entre **Ano do ciclo** e **Todos os anos**, porque consultar o histórico não exige um ano definido.
+- Com um ano em vista, a tabela do relatório passa a conter apenas esse ano: "Exportar a tabela completa" significa o ano inteiro, sem os filtros de mês, servidor e atividade, e não mais a série de todos os anos.
+- As opções de mês, servidor e atividade do relatório nascem do ano em vista, para não oferecer filtro que não devolve nada, e ganham rótulo próprio ("Todos os meses", "Todos os servidores", "Todas as atividades").
+- Os filtros do relatório passam a usar a mesma barra de filtros das outras abas, com o escopo de anos em chips.
+- O administrador também escolhe o ano no cabeçalho. A aba **Todas as entregas** segue mostrando todos os anos: é a visão de detalhe, com busca própria.
+
+---
 ## [3.3.4] - 2026-09-27
 
 ### Changed

@@ -30,7 +30,8 @@ Seu objetivo é oferecer uma base confiável para:
 - Restrição de edição em anos fechados.
 - Painel de esforço do mês, com a distribuição das horas por atividade.
 - Filtros de mês, atividade e situação na lista de lançamentos.
-- Relatórios com filtros por ano, mês, servidor e código. Para o administrador, o relatório soma as entregas de todos os servidores em cada atividade e mês; o detalhe individual fica na visão de todas as entregas.
+- Ano do ciclo escolhido no cabeçalho, válido para todas as abas: lançamento, matriz mensal e relatório usam o mesmo ano, e o relatório permite abrir a série completa com "Todos os anos".
+- Relatórios com filtros por mês, servidor e código. Para o administrador, o relatório soma as entregas de todos os servidores em cada atividade e mês; o detalhe individual fica na visão de todas as entregas.
 - Exportação das tabelas em PDF, Excel e CSV, com escolha entre os registros filtrados e a tabela completa, que ignora os filtros da tela. O PDF sai com cabeçalho, identificação do conteúdo e rodapé com data e hora da emissão.
 - Painel administrativo para gerenciar anos, códigos e servidores.
 - Auditoria de ações administrativas sobre anos de ciclo.
