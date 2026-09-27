@@ -248,7 +248,8 @@ function(input, output, session) {
             column(if (admin) 3 else 6, selectInput("in_filtro_codigo", "Atividade", choices = "Todos", width = "100%"))
           ),
           uiOutput("out_kpis_relatorio"),
-          DTOutput("out_tabela_relatorio")
+          DTOutput("out_tabela_relatorio"),
+          uiOutput("out_nota_relatorio")
         )
       )
 
@@ -262,6 +263,7 @@ function(input, output, session) {
             div(
               class = "acoes-secao",
               div(class = "tag-secao tag-verde", "Rascunho visível só para você"),
+              div(class = "tag-secao", "Editável a qualquer momento"),
               uiOutput("out_mm_status", inline = TRUE)
             )
           ),
@@ -321,7 +323,7 @@ function(input, output, session) {
               ),
               p(
                 class = "explicacao",
-                "Cada lançamento é um cartão. Clique no cartão para editar ou remover, com confirmação. As alterações só são permitidas enquanto o ano do ciclo estiver aberto."
+                "Cada lançamento é um cartão. Clique no cartão para editar ou remover quando quiser, com confirmação. As alterações são livres enquanto o ano do ciclo estiver aberto."
               ),
               div(
                 class = "barra-filtros",
@@ -963,7 +965,9 @@ function(input, output, session) {
       if (ano_esta_aberto())
         paste("Escolha uma atividade e informe, de uma vez, as entregas e as horas de cada mês do ano.",
               "Deixe em branco os meses sem entrega: em branco não registra nada.",
-              "Guarde quantas atividades quiser e, quando terminar, envie tudo ao gestor.")
+              "Guarde quantas atividades quiser e, quando terminar, envie tudo ao gestor.",
+              "Nada fica travado: você pode voltar aqui e alterar qualquer mês quando quiser,",
+              "inclusive depois de enviar, e o gestor passa a ver a versão atual.")
       else
         paste0("O ano ", ano_ciclo(), " está fechado. Os lançamentos ficam disponíveis para consulta, ",
                "e o consolidado abaixo continua somando o lançamento diário e o mensal.")
@@ -1240,7 +1244,7 @@ function(input, output, session) {
           WHERE servidor = $1 AND ano = $2 AND origem = 'mensal' AND envio = 'rascunho'",
         params = list(usuario(), ano_ciclo())
       ),
-      "Lançamentos enviados ao gestor."
+      "Lançamentos enviados ao gestor. Você pode continuar editando quando quiser."
     )
     if (ok) marcar(entregas_refresh)
   })
@@ -1456,6 +1460,22 @@ function(input, output, session) {
                   alinhar_direita = c("Entregas", "Horas"),
                   ocultar = c("f_ano", "f_mes", "f_codigo", "f_servidor"),
                   titulo = "Relatório de esforço", chave = "relatorio")
+  })
+
+  # A explicação do asterisco fica visível na tela, e não apenas como dica do mouse
+  output$out_nota_relatorio <- renderUI({
+    req(usuario())
+    resumo <- resumo_relatorio()
+    if (nrow(resumo) == 0 || !any(resumo$estimado)) return(NULL)
+
+    div(
+      class = "nota-tabela",
+      span(class = "nota-marca", "*"),
+      span(
+        "Esforço estimado pela quantidade de entregas, porque o mês não tem horas informadas. ",
+        "Informe as horas do mês para que o percentual passe a ser calculado por elas."
+      )
+    )
   })
 
   ## Os filtros do topo viram busca por coluna na tabela já montada ----
