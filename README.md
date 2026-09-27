@@ -25,6 +25,7 @@ Seu objetivo é oferecer uma base confiável para:
 - Tela de acesso dedicada, com aviso sobre os dados guardados e a finalidade do sistema.
 - Autenticação por SIAPE e senha, com limite de tentativas sem sucesso.
 - Registro, edição e exclusão de entregas pelo próprio usuário, em cartões com ação direta e confirmação.
+- Lançamento mensal em matriz: uma atividade por vez, com as entregas e as horas de cada mês do ano, guardadas como rascunho até o envio ao gestor.
 - Controle de ano de ciclo com status aberto ou fechado.
 - Restrição de edição em anos fechados.
 - Painel de esforço do mês, com a distribuição das horas por atividade.
@@ -68,6 +69,7 @@ endereço de rede, informações de navegador ou qualquer outro dado pessoal. A 
 - `www/js/exportacao.js`: montagem do PDF de exportação e utilidades das tabelas.
 - `scripts/gerar_logo_app.R`: gera a logo e o favicon a partir de cores CIELCH (`Rscript scripts/gerar_logo_app.R`).
 - `scripts/limpar_registros_de_rede.R`: manutenção pontual, descrita no `RUNBOOK.md`.
+- `scripts/migrar_lancamento_mensal.R`: prepara o banco para o lançamento mensal.
 - `VERSION`: armazena a versão atual da aplicação.
 - `manifest.json`: descreve o ambiente R para publicação no Posit Connect Cloud.
 - `.Renviron.example`: modelo das variáveis de ambiente, sem valores reais.

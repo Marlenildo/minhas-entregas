@@ -291,6 +291,44 @@ div.dt-button-collection .dt-button { display:block; width:100%; margin:0; paddi
 div.dt-button-collection .dt-button:hover { color:var(--navy)!important; background:var(--blue-soft)!important; }
 div.dt-button-background { background:rgba(23,59,91,.18); }
 
+/* Lançamento mensal */
+.matriz-mensal { border:1px solid var(--line); border-radius:10px; overflow:hidden; margin:10px 0 16px; }
+.matriz-cabecalho,.matriz-linha { display:grid; grid-template-columns:minmax(110px,1.4fr) 110px 110px minmax(150px,1fr); align-items:center; gap:12px; padding:8px 14px; }
+.matriz-cabecalho { background:var(--navy); color:#fff; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; padding:11px 14px; }
+.matriz-cabecalho .mm-info { text-align:right; }
+.matriz-linha { border-top:1px solid #eef3f7; }
+.matriz-linha:nth-child(even) { background:#f9fbfd; }
+.matriz-linha.preenchida { background:var(--blue-soft); }
+.matriz-linha .form-group,.matriz-linha .shiny-input-container { margin:0; width:100%; }
+.matriz-linha .form-control { height:34px; text-align:right; font-variant-numeric:tabular-nums; }
+.mm-rotulo { color:var(--navy); font-size:13px; font-weight:800; }
+.mm-legenda { display:none; color:var(--muted); font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px; }
+.mm-info { color:var(--muted); font-size:11.5px; text-align:right; font-variant-numeric:tabular-nums; }
+.aviso-matriz { display:flex; align-items:center; gap:8px; padding:11px 14px; border-top:1px solid var(--line); background:var(--red-soft); color:var(--red); font-size:12.5px; font-weight:700; }
+.aviso-estimado { display:flex; align-items:center; gap:8px; margin:0 0 12px; padding:9px 12px; background:var(--amber-soft); border:1px solid #f0dc9a; border-radius:8px; color:#6b5200; font-size:12.5px; }
+.aviso-estimado .fa { color:var(--amber); }
+
+.status-ano.rascunho { color:var(--amber); background:var(--amber-soft); border:1px solid #f0dc9a; margin-left:8px; }
+.selo-mensal { color:var(--blue); background:var(--blue-soft); }
+.selo-rascunho { color:var(--amber); background:var(--amber-soft); }
+
+.resumo-atividade { display:flex; gap:26px; flex-wrap:wrap; padding-top:25px; }
+.resumo-atividade .resumo-valor { display:block; color:var(--navy); font-size:19px; font-weight:800; line-height:1.15; font-variant-numeric:tabular-nums; }
+.resumo-atividade .resumo-rotulo { display:block; color:var(--muted); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+
+.tabela-consolidado { overflow-x:auto; border:1px solid var(--line); border-radius:10px; }
+.tabela-consolidado table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.tabela-consolidado th,.tabela-consolidado td { padding:9px 12px; border-bottom:1px solid #eef3f7; white-space:nowrap; }
+.tabela-consolidado thead th { background:var(--navy); color:#fff; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; }
+.tabela-consolidado tbody td { color:#344b5e; }
+.tabela-consolidado tbody tr:nth-child(even) { background:#f9fbfd; }
+.tabela-consolidado .num { text-align:right; font-variant-numeric:tabular-nums; }
+.tabela-consolidado .total { color:var(--navy); font-weight:800; }
+.tabela-consolidado tfoot th { background:#f4f7fa; color:var(--navy); font-size:12px; font-weight:800; border-top:2px solid var(--line); }
+.cartao-dia-mensal { background:var(--navy); }
+.cartao-dia-mensal .dia { color:#fff; font-size:15px; letter-spacing:.5px; }
+.cartao-dia-mensal .mes { color:#b9d1e7; }
+
 /* Rodapé */
 .rodape-app { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px; color:#718498; font-size:12px; text-align:center; padding:18px 0 4px; }
 .logo-rodape { height:42px; width:auto; }
@@ -337,6 +375,13 @@ div.dt-button-background { background:rgba(23,59,91,.18); }
   .barra-filtros { padding:12px; gap:10px; }
   .barra-filtros .filtro,.barra-filtros .filtro-largo,.barra-filtros .filtro-chips,.barra-filtros .filtro-acao { flex:1 1 100%; }
   .barra-filtros .btn { width:100%; }
+  .matriz-cabecalho { display:none; }
+  .matriz-linha { grid-template-columns:1fr 1fr; gap:6px 10px; padding:12px; }
+  .matriz-linha .mm-rotulo { grid-column:1 / -1; }
+  .matriz-linha .mm-info { grid-column:1 / -1; text-align:left; }
+  .matriz-linha .form-control { height:38px; }
+  .mm-legenda { display:block; }
+  .resumo-atividade { padding-top:4px; gap:18px; }
   .filtro-chips .radio-inline { flex:1 1 auto; text-align:center; }
   .dataTables_wrapper .dataTables_filter input { min-width:0; width:100%; }
   table.dataTable thead th { font-size:10px; padding:9px 18px 9px 7px!important; }
