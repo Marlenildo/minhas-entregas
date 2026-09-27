@@ -7,6 +7,14 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 - Em desenvolvimento.
 
 ---
+## [3.3.1] - 2026-09-27
+
+### Changed
+- Ano de ciclo fechado deixa a tela limpa: os campos de preenchimento e os botões de ação desaparecem, em vez de aparecerem desabilitados. Ficam o aviso do ano fechado e o que já está registrado.
+- No lançamento mensal, o ano fechado mostra apenas os meses com valores, em formato de consulta, e avisa se restaram rascunhos que não chegaram ao gestor.
+- O texto de orientação da aba mensal muda conforme o ano esteja aberto ou fechado.
+
+---
 ## [3.3.0] - 2026-09-27
 
 ### Added
