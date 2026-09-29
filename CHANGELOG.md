@@ -4,7 +4,7 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 
 ---
 ## [Unreleased]
-- Em desenvolvimento.
+- Script do Google AdSense e `ads.txt` para monetização do app.
 
 ---
 ## [3.4.1] - 2026-09-27

@@ -4,6 +4,7 @@
 fluidPage(
   shinyjs::useShinyjs(),
   tags$head(
+    tags$script(async = NA, src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3130340973057636", crossorigin = "anonymous"),
     tags$link(rel = "stylesheet", type = "text/css", href = "css/app.css"),
     tags$link(rel = "icon", type = "image/png", href = "img/favicon.png"),
     tags$meta(name = "author", content = "Marlenildo Melo"),
