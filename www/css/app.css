@@ -347,7 +347,8 @@ div.dt-button-background { background:rgba(23,59,91,.18); }
 
 /* Rodapé */
 .rodape-app { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:10px; color:#718498; font-size:12px; text-align:center; padding:18px 0 4px; }
-.logo-rodape { height:42px; width:auto; }
+.logo-rodape { height:26px; width:auto; }
+.link-logo-rodape { display:inline-flex; line-height:0; border-radius:4px; transition:opacity .15s; }.link-logo-rodape:hover { opacity:.8; }
 .versao-app { border-left:1px solid var(--line); padding-left:10px; margin-left:2px; font-weight:700; }
 .direitos-app { flex-basis:100%; font-size:11px; color:#8a9aab; }
 
