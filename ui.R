@@ -113,7 +113,9 @@ fluidPage(
   div(
     class = "rodape-app",
     span("Desenvolvido por"),
-    tags$img(src = "img/logo_marlenildo.png", class = "logo-rodape", alt = "Marlenildo.online"),
+    tags$a(href = "https://marlenildo.online", target = "_blank", rel = "noopener", class = "link-logo-rodape",
+           title = "Conheça outros apps em marlenildo.online",
+           tags$img(src = "img/logo_marlenildo.png", class = "logo-rodape", alt = "Marlenildo.online")),
     span(class = "versao-app", paste0("Minhas Entregas v", APP_VERSION)),
     div(class = "direitos-app", "© 2025-2026 Marlenildo Melo · Todos os direitos reservados · Licença proprietária")
   )

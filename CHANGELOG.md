@@ -5,7 +5,7 @@ Todas as alterações relevantes do Minhas Entregas são documentadas aqui.
 ---
 ## [Unreleased]
 - Script do Google AdSense e `ads.txt` para monetização do app.
-- Assinatura do autor no rodapé passa a usar a nova logo Marlenildo.online, a mesma do site, sem o slogan "Soluções em Curso".
+- Assinatura do autor no rodapé passa a usar a nova logo Marlenildo.online, a mesma do site, sem o slogan "Soluções em Curso". Clicar na logo abre https://marlenildo.online em nova aba.
 
 ---
 ## [3.4.1] - 2026-09-27
